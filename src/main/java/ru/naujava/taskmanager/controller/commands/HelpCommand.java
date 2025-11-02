@@ -19,10 +19,10 @@ public class HelpCommand implements BotCommand {
     public String execute(String command, Long chatId) {
         return """
                 Доступные команды:
-                /help - показать эту справку
-                /add <описание> - добавить задачу
-                /todo - показать список задач
-                /delete <taskId> - удалить задачу по id
+                /add [описание] – добавить задачу
+                /todo – показать список задач
+                /delete [номер] – удалить задачу
+                /help – справка по командам
                 """;
     }
 }

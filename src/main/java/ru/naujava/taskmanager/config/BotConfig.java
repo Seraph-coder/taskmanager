@@ -19,10 +19,8 @@ public class BotConfig {
      */
     @Bean
     public String botToken() {
-        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-        String token = dotenv.get("BOT_TOKEN");
-        if (token == null) token = dotenv.get("TELEGRAM_BOT_TOKEN");
-        return token;
+        Dotenv dotenv = Dotenv.configure().load();
+        return dotenv.get("TELEGRAM_BOT_TOKEN");
     }
 
     /**
