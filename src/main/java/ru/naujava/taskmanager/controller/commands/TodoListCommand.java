@@ -16,9 +16,11 @@ import java.util.List;
 @Component
 public class TodoListCommand implements BotCommand {
     private final TaskService taskService;
+    private final TaskListFormatter formatter;
 
-    public TodoListCommand(TaskService taskService) {
+    public TodoListCommand(TaskService taskService, TaskListFormatter formatter) {
         this.taskService = taskService;
+        this.formatter = formatter;
     }
 
     @Override
@@ -35,6 +37,6 @@ public class TodoListCommand implements BotCommand {
         if (tasks == null || tasks.isEmpty()) {
             return "Список задач пуст";
         }
-        return TaskListFormatter.formatTasks(tasks);
+        return formatter.formatTasks(tasks);
     }
 }

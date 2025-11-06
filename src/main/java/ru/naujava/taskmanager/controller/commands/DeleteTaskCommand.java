@@ -17,9 +17,11 @@ import java.util.Optional;
 @Component
 public class DeleteTaskCommand implements BotCommand {
     private final TaskService taskService;
+    private final TaskListFormatter formatter;
 
-    public DeleteTaskCommand(TaskService taskService) {
+    public DeleteTaskCommand(TaskService taskService, TaskListFormatter formatter) {
         this.taskService = taskService;
+        this.formatter = formatter;
     }
 
     @Override
@@ -53,7 +55,7 @@ public class DeleteTaskCommand implements BotCommand {
             return "Список задач пуст.";
         }
 
-        Optional<Task> optionalTask = TaskListFormatter.getTaskByIndex(tasks, taskIndex);
+        Optional<Task> optionalTask = formatter.getTaskByIndex(tasks, taskIndex);
         if (optionalTask.isEmpty()) {
             return "Ошибка: задача " + taskIndex + " не найдена";
         }

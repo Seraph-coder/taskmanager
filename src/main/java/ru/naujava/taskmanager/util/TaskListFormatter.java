@@ -1,48 +1,43 @@
 package ru.naujava.taskmanager.util;
 
+import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.entity.Task;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Утилита для форматирования и работы со списком задач.
- * Реализована через static-методы, потому что методы —
- * чистые функции без состояния, всегда возвращающие один
- * и тот же результат (при одинаковых входных данных),
- * и не имеющие побочных эффектов.
+ * Утилитарный компонент для форматирования и работы со списком задач.
  *
  * @author Seraph-coder
  * @since 01.11.2025
  */
-public final class TaskListFormatter {
-    private TaskListFormatter() {
+@Component
+public class TaskListFormatter {
+    public TaskListFormatter() {
     }
 
     /**
      * Возвращает список задач, отсортированных по ID.
-     * Защищается от null-списка и null-элементов. Если id == null, такие задачи
-     * будут располагаться в конце.
+     * Если список пуст — возвращает пустой список.
      */
-    public static List<Task> sortTasks(List<Task> tasks) {
-        if (tasks == null || tasks.isEmpty()) {
+    public List<Task> sortTasks(List<Task> tasks) {
+        if (tasks.isEmpty()) {
             return List.of();
         }
         return tasks.stream()
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(Task::getId, Comparator.nullsLast(Comparator.naturalOrder())))
+                .sorted(Comparator.comparing(Task::getId))
                 .toList();
     }
 
     /**
      * Форматирует задачи в текст с нумерацией (1-based). Каждая запись в отдельной строке.
-     * Если список пуст или null — возвращает пустую строку.
+     * Если список пуст — возвращает пустую строку.
      */
-    public static String formatTasks(List<Task> tasks) {
+    public String formatTasks(List<Task> tasks) {
         List<Task> sorted = sortTasks(tasks);
         if (sorted.isEmpty()) {
             return "";
@@ -57,13 +52,13 @@ public final class TaskListFormatter {
 
     /**
      * Получает задачу по её индексу в отсортированном списке задач (1-based).
-     * Возвращает Optional.empty() при null/пустом списке или неверном индексе.
+     * Возвращает Optional.empty() при неверном индексе.
      */
-    public static Optional<Task> getTaskByIndex(List<Task> tasks, int index) {
+    public Optional<Task> getTaskByIndex(List<Task> tasks, int index) {
         List<Task> sorted = sortTasks(tasks);
         if (index <= 0 || index > sorted.size()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(sorted.get(index - 1));
+        return Optional.of(sorted.get(index - 1));
     }
 }

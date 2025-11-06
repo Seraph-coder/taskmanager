@@ -19,7 +19,8 @@ public class TaskListFormatterTest {
      */
     @Test
     void formatEmptyListReturnsEmptyString() {
-        String res = TaskListFormatter.formatTasks(List.of());
+        TaskListFormatter formatter = new TaskListFormatter();
+        String res = formatter.formatTasks(List.of());
         assertEquals("", res);
     }
 
@@ -28,6 +29,8 @@ public class TaskListFormatterTest {
      */
     @Test
     void formatTwoTasksSortedByIdAndNumbered() {
+        TaskListFormatter formatter = new TaskListFormatter();
+
         Task t1 = new Task();
         t1.setId(10L);
         t1.setDescription("Позвонить врачу");
@@ -36,9 +39,8 @@ public class TaskListFormatterTest {
         t2.setId(5L);
         t2.setDescription("Купить хлеб");
 
-        String res = TaskListFormatter.formatTasks(List.of(t1, t2));
+        String res = formatter.formatTasks(List.of(t1, t2));
         String expected = "1) Купить хлеб\n2) Позвонить врачу";
         assertEquals(expected, res);
     }
 }
-
