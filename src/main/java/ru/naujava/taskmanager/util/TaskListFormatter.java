@@ -4,12 +4,17 @@ import ru.naujava.taskmanager.entity.Task;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
  * Утилита для форматирования и работы со списком задач.
+ * Реализована через static-методы, потому что методы —
+ * чистые функции без состояния, всегда возвращающие один
+ * и тот же результат (при одинаковых входных данных),
+ * и не имеющие побочных эффектов.
  *
  * @author Seraph-coder
  * @since 01.11.2025
@@ -20,31 +25,45 @@ public final class TaskListFormatter {
 
     /**
      * Возвращает список задач, отсортированных по ID.
+     * Защищается от null-списка и null-элементов. Если id == null, такие задачи
+     * будут располагаться в конце.
      */
     public static List<Task> sortTasks(List<Task> tasks) {
+        if (tasks == null || tasks.isEmpty()) {
+            return List.of();
+        }
         return tasks.stream()
-                .sorted(Comparator.comparing(Task::getId))
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(Task::getId, Comparator.nullsLast(Comparator.naturalOrder())))
                 .toList();
     }
 
     /**
      * Форматирует задачи в текст с нумерацией (1-based). Каждая запись в отдельной строке.
+     * Если список пуст или null — возвращает пустую строку.
      */
     public static String formatTasks(List<Task> tasks) {
         List<Task> sorted = sortTasks(tasks);
+        if (sorted.isEmpty()) {
+            return "";
+        }
         return IntStream.range(0, sorted.size())
-                .mapToObj(i -> (i + 1) + ") " + sorted.get(i).getDescription())
+                .mapToObj(i -> {
+                    String desc = Optional.ofNullable(sorted.get(i).getDescription()).orElse("");
+                    return (i + 1) + ") " + desc;
+                })
                 .collect(Collectors.joining("\n"));
     }
 
     /**
-     * Получает задачу по её индексу в отсортированном списке задач.
+     * Получает задачу по её индексу в отсортированном списке задач (1-based).
+     * Возвращает Optional.empty() при null/пустом списке или неверном индексе.
      */
     public static Optional<Task> getTaskByIndex(List<Task> tasks, int index) {
         List<Task> sorted = sortTasks(tasks);
         if (index <= 0 || index > sorted.size()) {
             return Optional.empty();
         }
-        return Optional.of(sorted.get(index - 1));
+        return Optional.ofNullable(sorted.get(index - 1));
     }
 }
