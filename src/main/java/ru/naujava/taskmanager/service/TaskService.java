@@ -36,6 +36,8 @@ public class TaskService {
 
     /**
      * Создает задачу, связывая её с пользователем по Telegram ID.
+     * @throws IllegalArgumentException если задача с таким описанием уже существует
+     * или если входные параметры некорректны
      */
     public Task createTask(String taskDescription, Long telegramId) {
         Objects.requireNonNull(taskDescription, "taskDescription не должен быть null");
@@ -50,6 +52,7 @@ public class TaskService {
         }
 
         User user = userService.getOrCreateByTelegramId(telegramId);
+
         Task task = new Task();
         task.setUser(user);
         task.setDescription(taskDescription);
@@ -58,6 +61,7 @@ public class TaskService {
 
     /**
      * Удаляет задачу по её ID и Telegram ID пользователя.
+     * @throws IllegalArgumentException если задача не найдена
      */
     public Task deleteTaskByIdAndTelegramId(Long taskId, Long telegramId) {
         Objects.requireNonNull(taskId, "taskId не должен быть null");

@@ -32,10 +32,14 @@ public class UserService {
     /**
      * Возвращает существующего пользователя по Telegram ID или создает
      * нового, если пользователь не найден.
+     * @throws IllegalArgumentException если telegramId null или не положительное число
      */
     public User getOrCreateByTelegramId(Long telegramId) {
         if (telegramId == null) {
             throw new IllegalArgumentException("Telegram ID не может быть null");
+        }
+        if (telegramId <= 0) {
+            throw new IllegalArgumentException("Telegram ID должен быть положительным числом");
         }
         return userRepository.findByTelegramId(telegramId)
                 .orElseGet(() -> {
@@ -46,16 +50,18 @@ public class UserService {
     }
 
     /**
-     * Сохраняет или обновляет пользователя.
-     */
-    public User save(User user) {
-        return userRepository.save(user);
-    }
-
-    /**
      * Удаляет пользователя по Telegram ID.
+     * @throws IllegalArgumentException если пользователь не найден
      */
     public void deleteByTelegramId(Long telegramId) {
+        if (telegramId == null) {
+            throw new IllegalArgumentException("Telegram ID не может быть null");
+        }
+        if (telegramId <= 0) {
+            throw new IllegalArgumentException("Telegram ID должен быть положительным числом");
+        }
+        userRepository.findByTelegramId(telegramId)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с таким Telegram ID не найден"));
         userRepository.deleteByTelegramId(telegramId);
     }
 }

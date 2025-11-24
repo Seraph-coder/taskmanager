@@ -1,6 +1,12 @@
 package ru.naujava.taskmanager.controller;
 
 import org.springframework.stereotype.Component;
+import ru.naujava.taskmanager.controller.command.BotCommand;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Обработчик команд для управления задачами.
@@ -10,10 +16,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CommandHandler {
-    private final CommandRegistry commandRegistry;
+    private final Map<String, BotCommand> commands = new HashMap<>();
 
-    public CommandHandler(CommandRegistry commandRegistry) {
-        this.commandRegistry = commandRegistry;
+    /**
+     * Конструктор принимает список команд и регистрирует их по имени.
+     */
+    public CommandHandler(List<BotCommand> commandsList) {
+        for (BotCommand c : commandsList) {
+            commands.put(c.getCommandName().toLowerCase(), c);
+        }
     }
 
     /**
@@ -27,9 +38,8 @@ public class CommandHandler {
         String[] parts = trimmed.split("\\s+", 2);
         String cmd = parts[0].toLowerCase();
         String args = parts.length > 1 ? parts[1] : "";
-        return commandRegistry.find(cmd)
+        return Optional.ofNullable(commands.get(cmd))
                 .map(c -> c.execute(args, chatId))
                 .orElse("Неизвестная команда. Введите /help для списка команд");
     }
 }
-

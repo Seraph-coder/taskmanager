@@ -3,6 +3,7 @@ package ru.naujava.taskmanager.config;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.naujava.taskmanager.bot.NoOpTelegramBot;
 import ru.naujava.taskmanager.bot.TelegramBot;
 import ru.naujava.taskmanager.controller.CommandHandler;
 
@@ -15,20 +16,31 @@ import ru.naujava.taskmanager.controller.CommandHandler;
 @Configuration
 public class BotConfig {
     /**
-     * Получение токена бота из переменных окружения.
+     * Получение токена бота из переменных окружения или .env (если есть).
+     * Не падает, если .env отсутствует.
      */
-    @Bean
     public String botToken() {
-        Dotenv dotenv = Dotenv.configure().load();
-        return dotenv.get("TELEGRAM_BOT_TOKEN");
+        Dotenv dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .load();
+        String token = dotenv.get("TELEGRAM_BOT_TOKEN");
+        if (token == null || token.isBlank()) {
+            return null;
+        }
+        return token;
     }
 
     /**
-     * Создание экземпляра TelegramBot.
+     * Создание экземпляра TelegramBot. Если токен не задан — возвращаем NoOpTelegramBot,
+     * безопасную заглушку для компиляции и запуска тестов без .env.
      */
     @Bean
-    public TelegramBot telegramBot(String botToken, CommandHandler commandHandler) {
+    public TelegramBot telegramBot(CommandHandler commandHandler) {
+        String botToken = botToken();
+
+        if (botToken == null || botToken.isBlank()) {
+            return new NoOpTelegramBot(null, commandHandler);
+        }
         return new TelegramBot(botToken, commandHandler);
     }
 }
-

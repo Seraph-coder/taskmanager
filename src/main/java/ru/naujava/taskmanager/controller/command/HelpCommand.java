@@ -1,4 +1,4 @@
-package ru.naujava.taskmanager.controller.commands;
+package ru.naujava.taskmanager.controller.command;
 
 import org.springframework.stereotype.Component;
 
