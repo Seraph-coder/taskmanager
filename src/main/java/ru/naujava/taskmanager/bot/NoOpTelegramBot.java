@@ -2,6 +2,7 @@ package ru.naujava.taskmanager.bot;
 
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import ru.naujava.taskmanager.bot.state.StateMachine;
 import ru.naujava.taskmanager.controller.CommandHandler;
 
 import java.util.List;
@@ -14,8 +15,8 @@ public class NoOpTelegramBot extends TelegramBot {
     /**
      * Конструктор NoOpTelegramBot.
      */
-    public NoOpTelegramBot(String botToken, CommandHandler commandHandler) {
-        super(botToken, commandHandler);
+    public NoOpTelegramBot(String botToken, CommandHandler commandHandler, StateMachine stateMachine) {
+        super(botToken, commandHandler, stateMachine);
     }
 
     /**
@@ -32,13 +33,6 @@ public class NoOpTelegramBot extends TelegramBot {
     @Override
     public String getBotToken() {
         return "NO_TOKEN";
-    }
-
-    /**
-     * Отправка сообщения (ничего не делает).
-     */
-    @Override
-    public void sendMessage(Long chatId, String reply) {
     }
 
     /**

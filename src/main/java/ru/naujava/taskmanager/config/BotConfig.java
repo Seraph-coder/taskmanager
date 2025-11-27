@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.naujava.taskmanager.bot.NoOpTelegramBot;
 import ru.naujava.taskmanager.bot.TelegramBot;
+import ru.naujava.taskmanager.bot.state.StateMachine;
 import ru.naujava.taskmanager.controller.CommandHandler;
 
 /**
@@ -35,12 +36,12 @@ public class BotConfig {
      * безопасную заглушку для компиляции и запуска тестов без .env.
      */
     @Bean
-    public TelegramBot telegramBot(CommandHandler commandHandler) {
+    public TelegramBot telegramBot(CommandHandler commandHandler, StateMachine stateMachine) {
         String botToken = botToken();
 
         if (botToken == null || botToken.isBlank()) {
-            return new NoOpTelegramBot(null, commandHandler);
+            return new NoOpTelegramBot(null, commandHandler, stateMachine);
         }
-        return new TelegramBot(botToken, commandHandler);
+        return new TelegramBot(botToken, commandHandler, stateMachine);
     }
 }

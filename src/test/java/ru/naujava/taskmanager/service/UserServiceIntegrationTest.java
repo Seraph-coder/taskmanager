@@ -9,7 +9,7 @@ import ru.naujava.taskmanager.builder.UserTestBuilder;
 import ru.naujava.taskmanager.entity.User;
 
 /**
- * Тесты для сервиса пользователей.
+ * Тесты для сервиса пользователей {@link UserService}.
  *
  * @author Seraph-coder
  * @since 15.11.2025

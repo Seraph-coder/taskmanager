@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * Тесты для команд бота.
+ * Тесты для команд бота {@link CommandHandler}.
  *
  * @author Seraph-coder
  * @since 17.11.2025

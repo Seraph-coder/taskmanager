@@ -12,7 +12,7 @@ import ru.naujava.taskmanager.entity.User;
 import java.util.List;
 
 /**
- * Тесты для сервиса задач.
+ * Тесты для сервиса задач {@link TaskService}.
  *
  * @author Seraph-coder
  * @since 14.11.2025

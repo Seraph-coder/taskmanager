@@ -26,7 +26,6 @@ public class CommandHandler {
             commands.put(c.getCommandName().toLowerCase(), c);
         }
     }
-
     /**
      * Обрабатывает входящее сообщение от пользователя.
      */
@@ -34,6 +33,8 @@ public class CommandHandler {
         if (messageFromUser == null || messageFromUser.isBlank()) {
             return "Пустое сообщение";
         }
+
+
         String trimmed = messageFromUser.trim();
         String[] parts = trimmed.split("\\s+", 2);
         String cmd = parts[0].toLowerCase();
@@ -41,5 +42,22 @@ public class CommandHandler {
         return Optional.ofNullable(commands.get(cmd))
                 .map(c -> c.execute(args, chatId))
                 .orElse("Неизвестная команда. Введите /help для списка команд");
+    }
+
+    /**
+     * Обрабатывает callbackData от inline-кнопок.
+     */
+    public String handleCallback(String callbackData, Long chatId) {
+        if (callbackData == null || callbackData.isBlank()) {
+            return "Пустые данные обратного вызова";
+        }
+
+        return switch (callbackData) {
+            case "LIST" -> handle("/todo", chatId);
+            case "ADD" -> "Введите описание задачи";
+            case "DELETE" -> "Введите номер задачи для удаления";
+            case "CANCEL" -> "Действие отменено";
+            default -> "Неизвестные данные обратного вызова";
+        };
     }
 }
