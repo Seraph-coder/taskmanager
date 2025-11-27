@@ -38,10 +38,10 @@ public class TelegramStateMachine implements StateMachine {
     @Override
     public void setState(Long chatId, UserStateEnum state) {
         try {
-            userStateService.createUserState(chatId);
             userStateService.changeUserState(chatId, state);
         } catch (Exception e) {
             try {
+                userStateService.createUserState(chatId);
                 userStateService.changeUserState(chatId, state);
             } catch (Exception ex) {
                 Logger log = LoggerFactory.getLogger(TelegramStateMachine.class);
