@@ -13,11 +13,11 @@ import ru.naujava.taskmanager.repository.UserStateRepository;
 import ru.naujava.taskmanager.service.UserService;
 
 /**
- * Интеграционные тесты для {@link ru.naujava.taskmanager.bot.state.TelegramStateMachine}
+ * Интеграционные тесты для {@link StateMachine}
  */
 @SpringBootTest
 @ActiveProfiles("test")
-public class TelegramStateMachineIntegrationTest {
+public class StateMachineIntegrationTest {
     @Autowired
     private StateMachine stateMachine;
 
