@@ -1,5 +1,7 @@
 package ru.naujava.taskmanager.bot;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
@@ -19,7 +21,6 @@ import ru.naujava.taskmanager.entity.UserStateEnum;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 /**
  * TelegramBot реализует бота для Telegram,
@@ -35,7 +36,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
     private final TelegramClient telegramClient;
     private final CommandHandler commandHandler;
     private final StateMachine stateMachine;
-    private final Logger log = Logger.getLogger(TelegramBot.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
     public TelegramBot(String botToken, CommandHandler commandHandler,
                        StateMachine stateMachine) {
@@ -64,7 +65,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
                     handleIncomingText(chatId, messageFromUser);
                 }
             } catch (Exception e) {
-                log.warning("Ошибка при обработке обновления: " + e.getMessage());
+                log.warn("Ошибка при обработке обновления: {}", e.getMessage(), e);
             }
         }
     }
@@ -210,7 +211,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
         try {
             telegramClient.execute(msg);
         } catch (TelegramApiException e) {
-            log.warning("Не удалось отправить сообщение: " + e.getMessage());
+            log.warn("Не удалось отправить сообщение: {}", e.getMessage(), e);
         }
     }
 
@@ -224,7 +225,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
                     .build();
             telegramClient.execute(answer);
         } catch (TelegramApiException e) {
-            log.warning("Не удалось ответить на callback query: " + e.getMessage());
+            log.warn("Не удалось ответить на callback query: {}", e.getMessage(), e);
         }
     }
 
