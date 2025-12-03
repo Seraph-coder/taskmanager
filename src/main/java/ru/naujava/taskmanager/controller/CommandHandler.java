@@ -26,6 +26,7 @@ public class CommandHandler {
             commands.put(c.getCommandName().toLowerCase(), c);
         }
     }
+
     /**
      * Обрабатывает входящее сообщение от пользователя.
      */
@@ -33,7 +34,6 @@ public class CommandHandler {
         if (messageFromUser == null || messageFromUser.isBlank()) {
             return "Пустое сообщение";
         }
-
 
         String trimmed = messageFromUser.trim();
         String[] parts = trimmed.split("\\s+", 2);

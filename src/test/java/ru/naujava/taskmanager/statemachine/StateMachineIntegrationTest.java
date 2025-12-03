@@ -1,4 +1,4 @@
-package ru.naujava.taskmanager.StateMachine;
+package ru.naujava.taskmanager.statemachine;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;

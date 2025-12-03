@@ -7,6 +7,7 @@ import ru.naujava.taskmanager.entity.UserStateEnum;
 import ru.naujava.taskmanager.repository.UserStateRepository;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Сервис для управления состояниями пользователей.
@@ -35,15 +36,15 @@ public class UserStateService {
      * @throws NullPointerException если telegramId равен null
      * @throws IllegalArgumentException если пользователь с таким telegramId не существует
      */
-    @Transactional(readOnly = true)
     public UserStateEnum getOrCreateUserState(Long telegramId) {
         Objects.requireNonNull(telegramId, "telegramId не может быть null");
         if (userService.findByTelegramId(telegramId).isEmpty()) {
             throw new IllegalArgumentException(
                     "Пользователя с таким telegramId не существует: " + telegramId);
         }
-        if (userStateRepository.findById(telegramId).isPresent()) {
-            return userStateRepository.findById(telegramId).get().getState();
+        Optional<UserState> userStateOpt = userStateRepository.findById(telegramId);
+        if (userStateOpt.isPresent()) {
+            return userStateOpt.get().getState();
         }
         UserState newUserState = new UserState();
         newUserState.setTelegramId(telegramId);
@@ -65,14 +66,14 @@ public class UserStateService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Пользователя с таким telegramId не существует: " + telegramId));
 
-        if (userStateRepository.findById(telegramId).isEmpty()) {
+        Optional<UserState> userStateOpt = userStateRepository.findById(telegramId);
+        if (userStateOpt.isEmpty()) {
             getOrCreateUserState(telegramId);
+            userStateOpt = userStateRepository.findById(telegramId);
         }
-
-        userStateRepository.findById(telegramId)
-                .ifPresent(userState -> {
-                    userState.setState(newState);
-                    userStateRepository.save(userState);
-                });
+        userStateOpt.ifPresent(userState -> {
+            userState.setState(newState);
+            userStateRepository.save(userState);
+        });
     }
 }

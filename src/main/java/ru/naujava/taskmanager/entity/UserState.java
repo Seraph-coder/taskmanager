@@ -14,7 +14,7 @@ public class UserState {
     @Id
     private Long telegramId;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStateEnum state = UserStateEnum.DEFAULT;
 

@@ -42,7 +42,7 @@ public class DeleteTaskCommand implements BotCommand {
         try {
             taskIndex = Integer.parseInt(taskId.trim());
         } catch (NumberFormatException e) {
-            log.error("Не удалось удалить задачу. Причина: номер задачи должен быть положительным числом", e);
+            log.error("Не удалось удалить задачу. Причина: номер задачи должен быть числом", e);
             return "Ошибка: номер задачи должен быть числом";
         }
 

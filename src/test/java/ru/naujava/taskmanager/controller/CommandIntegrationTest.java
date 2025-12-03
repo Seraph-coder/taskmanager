@@ -130,7 +130,7 @@ public class CommandIntegrationTest {
                                 &&
                                 ev.getFormattedMessage().equals(
                                         "Не удалось удалить задачу. Причина: номер задачи должен быть " +
-                                                "положительным числом"
+                                                "числом"
                                 )
                 );
         Assertions.assertTrue(hasErrorLog);
