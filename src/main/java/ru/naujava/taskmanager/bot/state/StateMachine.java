@@ -37,7 +37,7 @@ public class StateMachine {
         try {
             return Optional.ofNullable(userStateService.getOrCreateUserState(chatId));
         } catch (IllegalArgumentException e) {
-            log.error("Не удалось получить состояние для chatId={}: {}", chatId, e.getMessage(), e);
+            log.warn("Не удалось получить состояние для chatId={}: {}", chatId, e.getMessage(), e);
             return Optional.empty();
         }
     }
@@ -53,7 +53,7 @@ public class StateMachine {
         try {
             userStateService.changeUserState(chatId, state);
         } catch (IllegalArgumentException e) {
-            log.error("Не удалось установить состояние {} для chatId={}: {}", state, chatId, e.getMessage(), e);
+            log.warn("Не удалось установить состояние {} для chatId={}: {}", state, chatId, e.getMessage(), e);
         }
     }
 
