@@ -18,13 +18,14 @@ import ru.naujava.taskmanager.entity.UserStateEnum;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
  * TelegramBot реализует бота для Telegram,
  * который обрабатывает входящие сообщения и отвечает на них.
  * Поддерживает стандартные команды вида /command,
- * а также inline-кнопки и обработку СallbackQuery.
+ * а также inline-кнопки и обработку CallbackQuery.
  *
  * @author Seraph-coder
  * @since 01.11.2025
@@ -34,12 +35,17 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
     private final TelegramClient telegramClient;
     private final CommandHandler commandHandler;
     private final StateMachine stateMachine;
+    private final Logger log = Logger.getLogger(TelegramBot.class.getName());
 
     public TelegramBot(String botToken, CommandHandler commandHandler,
                        StateMachine stateMachine) {
         this.botToken = botToken;
         this.commandHandler = commandHandler;
-        this.telegramClient = new OkHttpTelegramClient(botToken);
+        if (botToken == null || botToken.isBlank()) {
+            this.telegramClient = null;
+        } else {
+            this.telegramClient = new OkHttpTelegramClient(botToken);
+        }
         this.stateMachine = stateMachine;
     }
 
@@ -58,9 +64,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
                     handleIncomingText(chatId, messageFromUser);
                 }
             } catch (Exception e) {
-                Logger.getLogger(TelegramBot.class.getName())
-                        .warning("Ошибка при обработке обновления: " +
-                                e.getMessage());
+                log.warning("Ошибка при обработке обновления: " + e.getMessage());
             }
         }
     }
@@ -72,7 +76,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
         Long chatId = callback.getMessage().getChatId();
         String data = callback.getData();
 
-        answerCallback(callback.getId(), null);
+        answerCallback(callback.getId());
 
         String replyHandler = commandHandler.handleCallback(data, chatId);
 
@@ -114,7 +118,8 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
      */
     private void handleIncomingText(Long chatId, String text) {
         Objects.requireNonNull(text);
-        UserStateEnum state = stateMachine.getState(chatId);
+        Optional<UserStateEnum> stateOpt = stateMachine.getState(chatId);
+        UserStateEnum state = stateOpt.orElse(UserStateEnum.DEFAULT);
 
         switch (state) {
             case AWAITING_TASK_DESCRIPTION -> {
@@ -133,8 +138,8 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
             }
             default -> {
                 String reply = commandHandler.handle(text, chatId);
-                if (reply != null && !reply.isBlank()) sendMessage(chatId, reply);
-                if (text.trim().startsWith("/")) {
+                if (reply != null && !reply.isBlank()) {
+                    sendMessage(chatId, reply);
                     sendMainMenu(chatId);
                 }
             }
@@ -145,9 +150,12 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
      * Отправляет главное меню с inline-кнопками.
      */
     private void sendMainMenu(Long chatId) {
-        InlineKeyboardButton add = InlineKeyboardButton.builder().text("Добавить задачу").callbackData("ADD").build();
-        InlineKeyboardButton del = InlineKeyboardButton.builder().text("Удалить задачу").callbackData("DELETE").build();
-        InlineKeyboardButton list = InlineKeyboardButton.builder().text("Список задач").callbackData("LIST").build();
+        InlineKeyboardButton add = InlineKeyboardButton.builder()
+                .text("Добавить задачу").callbackData("ADD").build();
+        InlineKeyboardButton del = InlineKeyboardButton.builder()
+                .text("Удалить задачу").callbackData("DELETE").build();
+        InlineKeyboardButton list = InlineKeyboardButton.builder()
+                .text("Список задач").callbackData("LIST").build();
 
         InlineKeyboardRow row = new InlineKeyboardRow();
         row.add(add);
@@ -168,7 +176,8 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
      * Отправляет сообщение с кнопкой "Отменить".
      */
     private void sendMessageWithCancel(Long chatId, String text) {
-        InlineKeyboardButton cancel = InlineKeyboardButton.builder().text("Отменить").callbackData("CANCEL").build();
+        InlineKeyboardButton cancel = InlineKeyboardButton.builder()
+                .text("Отменить").callbackData("CANCEL").build();
         InlineKeyboardRow row = new InlineKeyboardRow();
         row.add(cancel);
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup(List.of(row));
@@ -201,26 +210,21 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
         try {
             telegramClient.execute(msg);
         } catch (TelegramApiException e) {
-            Logger.getLogger(TelegramBot.class.getName())
-                    .warning("Не удалось отправить сообщение: " +
-                            e.getMessage());
+            log.warning("Не удалось отправить сообщение: " + e.getMessage());
         }
     }
 
     /**
      * Отвечает на CallbackQuery.
      */
-    private void answerCallback(String callbackId, String text) {
+    private void answerCallback(String callbackId) {
         try {
             AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
                     .callbackQueryId(callbackId)
-                    .text(text)
                     .build();
             telegramClient.execute(answer);
         } catch (TelegramApiException e) {
-            Logger.getLogger(TelegramBot.class.getName())
-                    .warning("Не удалось ответить на callback query: " +
-                            e.getMessage());
+            log.warning("Не удалось ответить на callback query: " + e.getMessage());
         }
     }
 

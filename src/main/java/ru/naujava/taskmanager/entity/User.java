@@ -28,6 +28,10 @@ public class User {
     public User() {
     }
 
+    public User(Long telegramId) {
+        this.telegramId = telegramId;
+    }
+
     public Long getId() {
         return id;
     }

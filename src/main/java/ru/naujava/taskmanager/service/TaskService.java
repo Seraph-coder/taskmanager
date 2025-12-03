@@ -27,11 +27,11 @@ public class TaskService {
     }
 
     /**
-     * Находит все задачи пользователя по его Telegram ID.
+     * Находит все задачи пользователя по его Telegram ID и возвращает их в отсортированном по ID порядке.
      */
     public List<Task> findAllTasksByTelegramId(Long telegramId) {
         Objects.requireNonNull(telegramId, "telegramId не должен быть null");
-        return taskRepository.findByUser_TelegramId(telegramId);
+        return taskRepository.findByUser_TelegramIdOrderByIdAsc(telegramId);
     }
 
     /**

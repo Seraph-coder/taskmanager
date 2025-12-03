@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Обработчик команд для управления задачами.
+ * Обработчик команд.
  *
  * @author Seraph-coder
  * @since 01.11.2025

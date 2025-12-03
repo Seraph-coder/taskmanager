@@ -7,7 +7,6 @@ import ru.naujava.taskmanager.entity.UserStateEnum;
 import ru.naujava.taskmanager.repository.UserStateRepository;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Сервис для управления состояниями пользователей.
@@ -30,97 +29,50 @@ public class UserStateService {
     }
 
     /**
-     * Создает новое состояние пользователя с указанным telegramId,
-     * если оно еще не существует.
-     * Возвращает Optional с новым состоянием пользователя,
-     * или пустой Optional, если состояние уже существует.
-     *
-     * @throws IllegalArgumentException если пользователь с таким telegramId не существует
-     * @throws NullPointerException     если telegramId равен null
-     */
-    public Optional<UserState> createUserState(Long telegramId) {
-        Objects.requireNonNull(telegramId, "telegramId не может быть null");
-        userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Пользователя с таким telegramId не существует: " + telegramId));
-
-        if (userStateRepository.findById(telegramId).isPresent()) {
-            return Optional.empty();
-        }
-
-        UserState newState = new UserState(telegramId);
-        return Optional.of(userStateRepository.save(newState));
-    }
-
-    /**
-     * Возвращает состояние пользователя по telegramId.
+     * Возвращает состояние пользователя по telegramId, если оно существует.
      * Если состояние не найдено, создает состояние для пользователя.
      *
      * @throws NullPointerException если telegramId равен null
+     * @throws IllegalArgumentException если пользователь с таким telegramId не существует
      */
     @Transactional(readOnly = true)
-    public UserStateEnum getUserState(Long telegramId) {
+    public UserStateEnum getOrCreateUserState(Long telegramId) {
         Objects.requireNonNull(telegramId, "telegramId не может быть null");
+        if (userService.findByTelegramId(telegramId).isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Пользователя с таким telegramId не существует: " + telegramId);
+        }
         if (userStateRepository.findById(telegramId).isPresent()) {
             return userStateRepository.findById(telegramId).get().getState();
-        } else {
-            createUserState(telegramId);
-            return UserStateEnum.DEFAULT;
         }
+        UserState newUserState = new UserState();
+        newUserState.setTelegramId(telegramId);
+        userStateRepository.save(newUserState);
+        return newUserState.getState();
     }
 
     /**
      * Изменяет состояние пользователя с указанным telegramId.
-     * Возвращает Optional с обновленным состоянием пользователя.
+     * Если состояние не найдено, создает его.
      *
      * @throws IllegalArgumentException если пользователь с таким telegramId не существует
-     * @throws IllegalArgumentException если состояние пользователя с таким telegramId не существует
+     * @throws NullPointerException если telegramId или newState равны null
      */
-    public Optional<UserState> changeUserState(Long telegramId, UserStateEnum newState) {
+    public void changeUserState(Long telegramId, UserStateEnum newState) {
         Objects.requireNonNull(telegramId, "telegramId не может быть null");
         Objects.requireNonNull(newState, "newState не может быть null");
         userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Пользователя с таким telegramId не существует: " + telegramId
-                ));
+                        "Пользователя с таким telegramId не существует: " + telegramId));
 
         if (userStateRepository.findById(telegramId).isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Состояния пользователя с таким telegramId не существует: " + telegramId);
+            getOrCreateUserState(telegramId);
         }
 
-        return userStateRepository.findById(telegramId)
-                .map(userState -> {
+        userStateRepository.findById(telegramId)
+                .ifPresent(userState -> {
                     userState.setState(newState);
-                    return userStateRepository.save(userState);
-                });
-    }
-
-    /**
-     * Сбрасывает состояние пользователя с указанным telegramId к состоянию по умолчанию.
-     * Возвращает true, если сброс выполнен успешно, иначе false.
-     *
-     * @throws IllegalArgumentException если пользователь с таким telegramId не существует
-     */
-    public boolean resetUserState(Long telegramId) {
-        Objects.requireNonNull(telegramId, "telegramId не может быть null");
-        userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Пользователя с таким telegramId не существует: " + telegramId
-                ));
-
-        if (userStateRepository.findById(telegramId).isEmpty()) {
-            UserState s = new UserState(telegramId);
-            s.setState(UserStateEnum.DEFAULT);
-            userStateRepository.save(s);
-            return true;
-        }
-
-        return userStateRepository.findById(telegramId)
-                .map(userState -> {
-                    userState.setState(UserStateEnum.DEFAULT);
                     userStateRepository.save(userState);
-                    return true;
-                }).orElse(false);
+                });
     }
 }

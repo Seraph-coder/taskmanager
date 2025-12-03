@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import ru.naujava.taskmanager.builder.UserTestBuilder;
 import ru.naujava.taskmanager.entity.Task;
 import ru.naujava.taskmanager.entity.User;
 
@@ -30,8 +29,8 @@ public class TaskServiceIntegrationTest {
      */
     @Test
     public void createTaskAndFindAllTasksByTelegramId() {
-        User user = new UserTestBuilder().withId(1L).withTelegramId(1L).build();
-        User anotherUser = new UserTestBuilder().withId(2L).withTelegramId(2L).build();
+        User user = new User(1L);
+        User anotherUser = new User(2L);
 
         taskService.createTask("Задача целевого пользователя", user.getTelegramId());
         taskService.createTask("Задача другого пользователя", anotherUser.getTelegramId());
@@ -53,7 +52,7 @@ public class TaskServiceIntegrationTest {
      */
     @Test
     public void findAllTasksByNonExistentTelegramIdReturnsEmptyList() {
-        User user = new UserTestBuilder().withId(1L).withTelegramId(1L).build();
+        User user = new User(1L);
 
         taskService.createTask("Задача другого пользователя", user.getTelegramId());
 
@@ -71,13 +70,15 @@ public class TaskServiceIntegrationTest {
      */
     @Test
     public void createDuplicateTaskDescriptionForSameAndDifferentUsers() {
-        User user = new UserTestBuilder().withId(1L).withTelegramId(1L).build();
-        User anotherUser = new UserTestBuilder().withId(2L).withTelegramId(2L).build();
+        User user = new User(1L);
+        User anotherUser = new User(2L);
+
         taskService.createTask("Повторяющаяся задача", user.getTelegramId());
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
+        taskService.createTask("Повторяющаяся задача", anotherUser.getTelegramId());
+
+        IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.createTask("Повторяющаяся задача", user.getTelegramId()));
-        Assertions.assertDoesNotThrow(() ->
-                taskService.createTask("Повторяющаяся задача", anotherUser.getTelegramId()));
+        Assertions.assertEquals("Задача с описанием 'Повторяющаяся задача' уже существует", ex.getMessage());
     }
 
     /**
@@ -87,13 +88,17 @@ public class TaskServiceIntegrationTest {
      */
     @Test
     public void createTaskWithNullDescriptionOrTelegramId() {
-        User user = new UserTestBuilder().withId(1L).withTelegramId(1L).build();
-        Assertions.assertThrows(NullPointerException.class, () ->
+        User user = new User(1L);
+
+        NullPointerException ex = Assertions.assertThrows(NullPointerException.class, () ->
                 taskService.createTask(null, user.getTelegramId())
         );
-        Assertions.assertThrows(NullPointerException.class, () ->
+        Assertions.assertEquals("taskDescription не должен быть null", ex.getMessage());
+
+        NullPointerException ex2 = Assertions.assertThrows(NullPointerException.class, () ->
                 taskService.createTask("Какая-то задача", null)
         );
+        Assertions.assertEquals("telegramId не должен быть null", ex2.getMessage());
     }
 
     /**
@@ -103,9 +108,11 @@ public class TaskServiceIntegrationTest {
      */
     @Test
     public void deleteTaskByIdAndTelegramId() {
-        User user = new UserTestBuilder().withId(1L).withTelegramId(1L).build();
+        User user = new User(1L);
+
         Task task = taskService.createTask("Задача для удаления", user.getTelegramId());
         Task deletedTask = taskService.deleteTaskByIdAndTelegramId(task.getId(), user.getTelegramId());
+
         Assertions.assertEquals(task.getId(), deletedTask.getId());
         List<Task> tasks = taskService.findAllTasksByTelegramId(user.getTelegramId());
         Assertions.assertTrue(tasks.isEmpty());
@@ -118,8 +125,10 @@ public class TaskServiceIntegrationTest {
      */
     @Test
     public void deleteNonExistentTaskThrowsException() {
-        User user = new UserTestBuilder().withId(1L).withTelegramId(1L).build();
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
+        User user = new User(1L);
+
+        IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.deleteTaskByIdAndTelegramId(999L, user.getTelegramId()));
+        Assertions.assertEquals("Задача не найдена", ex.getMessage());
     }
 }

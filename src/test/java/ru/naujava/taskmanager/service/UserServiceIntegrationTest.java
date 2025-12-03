@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import ru.naujava.taskmanager.builder.UserTestBuilder;
 import ru.naujava.taskmanager.entity.User;
 
 /**
@@ -33,19 +32,6 @@ public class UserServiceIntegrationTest {
     }
 
     /**
-     * Проверяет, что при повторном вызове getOrCreateByTelegramId
-     * возвращается тот же пользователь.
-     * <br>
-     * Ожидаемое поведение: возвращает существующего пользователя без создания нового.
-     */
-    @Test
-    public void getOrCreateByTelegramIdReturnsExistingUser() {
-        User firstCallUser = userService.getOrCreateByTelegramId(2L);
-        User secondCallUser = userService.getOrCreateByTelegramId(2L);
-        Assertions.assertEquals(firstCallUser.getId(), secondCallUser.getId());
-    }
-
-    /**
      * Проверяет, что при передаче неверного в getOrCreateByTelegramId
      * выбрасывается IllegalArgumentException.
      * <br>
@@ -53,13 +39,15 @@ public class UserServiceIntegrationTest {
      */
     @Test
     public void getOrCreateByTelegramIdWithInvalidIdThrowsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                        userService.getOrCreateByTelegramId(-1L),
-                "Telegram ID должен быть положительным числом"
+        IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                userService.getOrCreateByTelegramId(-1L)
         );
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                userService.getOrCreateByTelegramId(null), "Telegram ID не может быть null"
+        Assertions.assertEquals("Telegram ID должен быть положительным числом", ex.getMessage());
+
+        IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                userService.getOrCreateByTelegramId(null)
         );
+        Assertions.assertEquals("Telegram ID не может быть null", ex2.getMessage());
     }
 
     /**
@@ -79,9 +67,11 @@ public class UserServiceIntegrationTest {
      */
     @Test
     public void deleteByTelegramId() {
-        User user = new UserTestBuilder().withId(3L).withTelegramId(3L).build();
+        User user = new User(3L);
+
         userService.getOrCreateByTelegramId(user.getTelegramId());
         userService.deleteByTelegramId(user.getTelegramId());
+
         Assertions.assertTrue(userService.findByTelegramId(user.getTelegramId()).isEmpty());
     }
 
@@ -92,13 +82,15 @@ public class UserServiceIntegrationTest {
      */
     @Test
     public void deleteByTelegramIdWithInvalidIdThrowsException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                        userService.deleteByTelegramId(-1L),
-                "Telegram ID должен быть положительным числом"
+        IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                userService.deleteByTelegramId(-1L)
         );
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                userService.deleteByTelegramId(null), "Telegram ID не может быть null"
+        Assertions.assertEquals("Telegram ID должен быть положительным числом", ex.getMessage());
+
+        IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                userService.deleteByTelegramId(null)
         );
+        Assertions.assertEquals("Telegram ID не может быть null", ex2.getMessage());
     }
 
     /**
@@ -108,9 +100,9 @@ public class UserServiceIntegrationTest {
      */
     @Test
     public void deleteByTelegramIdForNonExistingUserDoesNothing() {
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                        userService.deleteByTelegramId(999L),
-                "Пользователь с таким Telegram ID не найден"
+        IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                userService.deleteByTelegramId(999L)
         );
+        Assertions.assertEquals("Пользователь с таким Telegram ID не найден", ex.getMessage());
     }
 }

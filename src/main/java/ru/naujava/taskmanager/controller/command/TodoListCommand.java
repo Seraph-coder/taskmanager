@@ -3,12 +3,9 @@ package ru.naujava.taskmanager.controller.command;
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.entity.Task;
 import ru.naujava.taskmanager.service.TaskService;
-import ru.naujava.taskmanager.util.TaskListSorter;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.Objects;
 
 /**
  * Команда для отображения списка задач пользователя.
@@ -19,11 +16,9 @@ import java.util.stream.IntStream;
 @Component
 public class TodoListCommand implements BotCommand {
     private final TaskService taskService;
-    private final TaskListSorter taskListSorter;
 
-    public TodoListCommand(TaskService taskService, TaskListSorter taskListSorter) {
+    public TodoListCommand(TaskService taskService) {
         this.taskService = taskService;
-        this.taskListSorter = taskListSorter;
     }
 
     @Override
@@ -40,27 +35,14 @@ public class TodoListCommand implements BotCommand {
         if (tasks == null || tasks.isEmpty()) {
             return "Список задач пуст";
         }
-        return formatTasks(tasks);
-    }
-
-    /**
-     * Форматирует список задач в текст с нумерацией (1-based). Каждая запись в отдельной строке.
-     * Если список пуст — возвращает пустую строку.
-     * Использует метод сортировки из {@link TaskListSorter}
-     *
-     * @param tasks список задач
-     * @return отформатированная строка с задачами
-     */
-    public String formatTasks(List<Task> tasks) {
-        List<Task> sorted = taskListSorter.sortTasks(tasks);
-        if (sorted.isEmpty()) {
-            return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < tasks.size(); i++) {
+            String desc = Objects.toString(tasks.get(i).getDescription(), "");
+            sb.append(i + 1).append(") ").append(desc);
+            if (i < tasks.size() - 1) {
+                sb.append("\n");
+            }
         }
-        return IntStream.range(0, sorted.size())
-                .mapToObj(i -> {
-                    String desc = Optional.ofNullable(sorted.get(i).getDescription()).orElse("");
-                    return (i + 1) + ") " + desc;
-                })
-                .collect(Collectors.joining("\n"));
+        return sb.toString();
     }
 }

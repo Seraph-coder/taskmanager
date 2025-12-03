@@ -38,7 +38,7 @@ public class AddTaskCommand implements BotCommand {
             taskService.createTask(trimDescription, chatId);
             return "Задача “" + trimDescription + "” добавлена";
         } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
+            log.error("Не удалось добавить задачу. Причина: {}", e.getMessage(), e);
             return "Ошибка: " + e.getMessage();
         }
     }
