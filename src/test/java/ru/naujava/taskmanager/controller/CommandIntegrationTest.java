@@ -67,7 +67,7 @@ public class CommandIntegrationTest {
         Assertions.assertEquals("1) Сделать домашнее задание", responseTodo);
 
         boolean hasErrorLog = listAppender.list.stream()
-                .anyMatch(ev ->
+                .allMatch(ev ->
                         ev.getLevel().toString().equals("ERROR")
                                 &&
                                 ev.getFormattedMessage().equals(
@@ -125,7 +125,7 @@ public class CommandIntegrationTest {
         Assertions.assertEquals("Ошибка: номер задачи должен быть числом", responseDeleteNonNumber);
 
         boolean hasErrorLog = listAppender.list.stream()
-                .anyMatch(ev ->
+                .allMatch(ev ->
                         ev.getLevel().toString().equals("ERROR")
                                 &&
                                 ev.getFormattedMessage().equals(

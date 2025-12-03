@@ -60,7 +60,7 @@ public class StateMachineIntegrationTest {
         Assertions.assertTrue(userState.isEmpty());
 
         boolean hasErrorLog = listAppender.list.stream()
-                .anyMatch(ev ->
+                .allMatch(ev ->
                         ev.getLevel().toString().equals("ERROR") &&
                                 ev.getFormattedMessage().equals("Не удалось получить состояние для" +
                                         " chatId=2000: Пользователя с таким telegramId не существует: 2000"
@@ -98,7 +98,7 @@ public class StateMachineIntegrationTest {
         logger.addAppender(listAppender);
         stateMachine.setState(2300L, UserStateEnum.AWAITING_TASK_DESCRIPTION);
         boolean hasErrorLog = listAppender.list.stream()
-                .anyMatch(ev ->
+                .allMatch(ev ->
                         ev.getLevel().toString().equals("ERROR") &&
                                 ev.getFormattedMessage().equals("Не удалось установить состояние " +
                                         "AWAITING_TASK_DESCRIPTION для chatId=2300: Пользователя с " +
