@@ -46,7 +46,7 @@ public class TaskServiceIntegrationTest {
     }
 
     /**
-     * Не находит задачи для несуществующего Telegram ID.
+     * Не находит задачу для несуществующего Telegram ID.
      * <br>
      * Ожидаемое поведение: возвращает пустой список.
      */
@@ -78,7 +78,8 @@ public class TaskServiceIntegrationTest {
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.createTask("Повторяющаяся задача", user.getTelegramId()));
-        Assertions.assertEquals("Задача с описанием 'Повторяющаяся задача' уже существует", ex.getMessage());
+        Assertions.assertEquals("Задача с описанием 'Повторяющаяся задача' уже существует",
+                ex.getMessage());
     }
 
     /**
@@ -130,5 +131,68 @@ public class TaskServiceIntegrationTest {
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.deleteTaskByIdAndTelegramId(999L, user.getTelegramId()));
         Assertions.assertEquals("Задача не найдена", ex.getMessage());
+    }
+
+    /**
+     * Удаляет задачу по её номеру в списке задач пользователя.
+     * <br>
+     * Ожидаемое поведение: задача удаляется успешно и возвращается удаленная задача.
+     */
+    @Test
+    public void deleteTaskByIndexAndTelegramId() {
+        User user = new User(1001L);
+
+        taskService.createTask("Задача 1", user.getTelegramId());
+        Task task2 = taskService.createTask("Задача 2", user.getTelegramId());
+        taskService.createTask("Задача 3", user.getTelegramId());
+
+        Task deletedTask = taskService.deleteTaskByIndexAndTelegramId(2, user.getTelegramId());
+
+        Assertions.assertEquals(task2.getId(), deletedTask.getId());
+        List<Task> tasks = taskService.findAllTasksByTelegramId(user.getTelegramId());
+        Assertions.assertEquals(2, tasks.size());
+        Assertions.assertTrue(tasks.stream()
+                .map(Task::getDescription)
+                .toList()
+                .containsAll(List.of("Задача 1", "Задача 3")));
+    }
+
+    /**
+     * Попытка удалить задачу с некорректным индексом.
+     * <br>
+     * Ожидаемое поведение: выбрасывается IllegalArgumentException.
+     */
+    @Test
+    public void deleteTaskByInvalidIndexThrowsException() {
+        User user = new User(1002L);
+
+        taskService.createTask("Задача 1", user.getTelegramId());
+
+        IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                taskService.deleteTaskByIndexAndTelegramId(5, user.getTelegramId()));
+        Assertions.assertEquals("Задача с номером 5 не найдена", ex.getMessage());
+
+        IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                taskService.deleteTaskByIndexAndTelegramId(0, user.getTelegramId()));
+        Assertions.assertEquals("Номер задачи должен быть положительным", ex2.getMessage());
+    }
+
+    /**
+     * Тест форматирования списка задач.
+     * <br>
+     * Ожидаемое поведение: возвращает отформатированную строку с задачами или сообщение о пустом списке.
+     */
+    @Test
+    public void formatTaskList() {
+        User user = new User(2001L);
+
+        String result = taskService.formatTaskList(user.getTelegramId());
+        Assertions.assertEquals("Список задач пуст", result);
+
+        taskService.createTask("Задача 1", user.getTelegramId());
+        taskService.createTask("Задача 2", user.getTelegramId());
+
+        result = taskService.formatTaskList(user.getTelegramId());
+        Assertions.assertEquals("1) Задача 1\n2) Задача 2", result);
     }
 }

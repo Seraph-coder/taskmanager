@@ -14,12 +14,12 @@
 
 ## Архитектура
 
-* **entity** — JPA-сущности (`Task`, `User`)
-* **repository** — интерфейсы JPA (`TaskRepository`, `UserRepository`)
-* **service** — бизнес-логика (`TaskService`, `UserService`)
-* **controller** — обработка команд (`CommandHandler`, `CommandRegistry`, команды в `controller/commands`)
-* **util** — вспомогательные утилиты (`TaskListFormatter`)
-* **bot** — интеграция с Telegram API (`TelegramBot`)
+* **entity** — JPA-сущности (`Task`, `User`, `UserState`, `TelegramIdState`)
+* **repository** — интерфейсы JPA (`TaskRepository`, `UserRepository`, `TelegramIdStateRepository`)
+* **service** — бизнес-логика (`TaskService`, `UserService`, `TelegramIdStateService`)
+* **state** — обработка состояний (`StateMachine`, handlers для состояний)
+* **controller** — команды бота (`BotCommand` и реализации в `controller/commands`)
+* **bot** — интеграция с Telegram API (`TelegramBot`, `BotMessageProcessor`, `KeyboardBuilder`)
 * **config** — конфигурация бота (`BotConfig`)
 
 ---
@@ -33,6 +33,8 @@
 | `/add <описание>`        | Добавить задачу                     |
 | `/todo`                  | Показать список невыполненных задач |
 | `/delete <номер задачи>` | Удалить задачу по номеру            |
+
+Бот также поддерживает inline-кнопки для интерактивного взаимодействия.
 
 ---
 
@@ -101,7 +103,8 @@ src/
      ├── entity/            # JPA-сущности
      ├── repository/        # Репозитории
      ├── service/           # Бизнес-логика
-     ├── controller/        # Обработка команд
+     ├── state/             # Обработка состояний
+     ├── controller/        # Команды бота
      │    └── commands/     # Реализации команд
      ├── bot/               # Telegram-интеграция
      ├── config/            # Конфигурация бота
@@ -115,10 +118,8 @@ src/
 * Сущности: `src/main/java/ru/naujava/taskmanager/entity`
 * Сервисы: `src/main/java/ru/naujava/taskmanager/service`
 * Репозитории: `src/main/java/ru/naujava/taskmanager/repository`
+* Состояния: `src/main/java/ru/naujava/taskmanager/state`
 * Команды бота: `src/main/java/ru/naujava/taskmanager/controller/commands`
-* Контроллер команд: `src/main/java/ru/naujava/taskmanager/controller/CommandRegistry.java`
-* Обработчик сообщений: `src/main/java/ru/naujava/taskmanager/controller/CommandHandler.java`
-* Утилиты: `src/main/java/ru/naujava/taskmanager/util/TaskListFormatter.java`
-* Telegram бот: `src/main/java/ru/naujava/taskmanager/bot/TelegramBot.java`
-* Конфигурация бота: `src/main/java/ru/naujava/taskmanager/config/BotConfig.java`
+* Telegram бот: `src/main/java/ru/naujava/taskmanager/bot`
+* Конфигурация бота: `src/main/java/ru/naujava/taskmanager/config`
 * Тесты: `src/test/java/ru/naujava/taskmanager`

@@ -1,0 +1,41 @@
+package ru.naujava.taskmanager.state;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.service.TaskService;
+
+/**
+ * Обработчик состояния AWAITING_TASK_DESCRIPTION.
+ */
+@Component
+public class AwaitingTaskDescriptionHandler implements StateHandler, MessageHandler {
+    private final Logger log = LoggerFactory.getLogger(AwaitingTaskDescriptionHandler.class);
+    private final TaskService taskService;
+
+    /**
+     * Конструктор обработчика.
+     */
+    public AwaitingTaskDescriptionHandler(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @Override
+    public UserState getState() {
+        return UserState.AWAITING_TASK_DESCRIPTION;
+    }
+
+    @Override
+    public StateTransition handle(Long chatId, String text) {
+        try {
+            taskService.createTask(text.trim(), chatId);
+            return new StateTransition(
+                    "Задача “" + text.trim() +
+                            "” добавлена", UserState.DEFAULT, true);
+        } catch (IllegalArgumentException e) {
+            log.warn("Ошибка при добавлении задачи для chatId={}: {}", chatId, e.getMessage(), e);
+            return new StateTransition(e.getMessage(), UserState.AWAITING_TASK_DESCRIPTION);
+        }
+    }
+}

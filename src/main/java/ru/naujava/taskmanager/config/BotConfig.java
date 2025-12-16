@@ -3,9 +3,11 @@ package ru.naujava.taskmanager.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.naujava.taskmanager.bot.BotMessageProcessor;
+import ru.naujava.taskmanager.bot.KeyboardBuilder;
 import ru.naujava.taskmanager.bot.TelegramBot;
-import ru.naujava.taskmanager.bot.state.StateMachine;
-import ru.naujava.taskmanager.controller.CommandHandler;
+import ru.naujava.taskmanager.controller.CallbackHandler;
+import ru.naujava.taskmanager.state.StateMachine;
 
 /**
  * Конфигурация Telegram бота.
@@ -19,10 +21,19 @@ public class BotConfig {
     private String botToken;
 
     /**
+     * Создание процессора сообщений.
+     */
+    @Bean
+    public BotMessageProcessor botMessageProcessor(StateMachine stateMachine, CallbackHandler callbackHandler,
+                                                   KeyboardBuilder keyboardBuilder) {
+        return new BotMessageProcessor(stateMachine, callbackHandler, keyboardBuilder);
+    }
+
+    /**
      * Создание экземпляра TelegramBot.
      */
     @Bean
-    public TelegramBot telegramBot(CommandHandler commandHandler, StateMachine stateMachine) {
-        return new TelegramBot(botToken, commandHandler, stateMachine);
+    public TelegramBot telegramBot(BotMessageProcessor messageProcessor) {
+        return new TelegramBot(botToken, messageProcessor);
     }
 }

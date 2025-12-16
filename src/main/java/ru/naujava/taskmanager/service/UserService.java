@@ -18,6 +18,9 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
 
+    /**
+     * Конструктор сервиса пользователей.
+     */
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }

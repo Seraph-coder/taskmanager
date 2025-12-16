@@ -14,13 +14,22 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User {
+    /**
+     * Уникальный идентификатор пользователя.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Уникальный Telegram ID пользователя.
+     */
     @Column(name = "telegram_id", nullable = false, unique = true)
     private Long telegramId;
 
+    /**
+     * Список задач, связанных с пользователем.
+     */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,
             fetch = FetchType.LAZY)
     private List<Task> tasks = new ArrayList<>();

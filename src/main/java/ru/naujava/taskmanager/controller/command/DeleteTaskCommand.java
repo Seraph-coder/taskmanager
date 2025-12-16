@@ -3,6 +3,9 @@ package ru.naujava.taskmanager.controller.command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.controller.Action;
+import ru.naujava.taskmanager.controller.CommandResponse;
 import ru.naujava.taskmanager.entity.Task;
 import ru.naujava.taskmanager.service.TaskService;
 
@@ -19,6 +22,9 @@ public class DeleteTaskCommand implements BotCommand {
     private final Logger log = LoggerFactory.getLogger(DeleteTaskCommand.class);
     private final TaskService taskService;
 
+    /**
+     * Конструктор удаления задачи.
+     */
     public DeleteTaskCommand(TaskService taskService) {
         this.taskService = taskService;
     }
@@ -29,12 +35,16 @@ public class DeleteTaskCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String taskId, Long chatId) {
+    public CommandResponse execute(String taskId, Long chatId) {
         if (chatId == null) {
-            return "Неизвестный пользователь";
+            return new CommandResponse(
+                    BotConstants.MSG_UNKNOWN_USER,
+                    Action.NONE, null, true);
         }
         if (taskId == null || taskId.isBlank()) {
-            return "Использование: /delete <taskId>";
+            return new CommandResponse(
+                    "Использование: /delete <taskId>", Action.NONE,
+                    null, true);
         }
 
         int taskIndex;
@@ -43,24 +53,33 @@ public class DeleteTaskCommand implements BotCommand {
             taskIndex = Integer.parseInt(taskId.trim());
         } catch (NumberFormatException e) {
             log.warn("Не удалось удалить задачу. Причина: номер задачи должен быть числом", e);
-            return "Ошибка: номер задачи должен быть числом";
+            return new CommandResponse(
+                    "Ошибка: номер задачи должен быть числом",
+                    Action.NONE, null, true);
         }
 
         if (taskIndex <= 0) {
-            return "Ошибка: номер задачи должен быть положительным числом";
+            return new CommandResponse(
+                    "Ошибка: номер задачи должен быть положительным числом",
+                    Action.NONE, null, true);
         }
 
         List<Task> tasks = taskService.findAllTasksByTelegramId(chatId);
         if (tasks == null || tasks.isEmpty()) {
-            return "Список задач пуст.";
+            return new CommandResponse(
+                    BotConstants.MSG_TASKS_EMPTY, Action.NONE, null);
         }
         if (taskIndex > tasks.size()) {
-            return "Ошибка: задача " + taskIndex + " не найдена";
+            return new CommandResponse(
+                    "Ошибка: задача " + taskIndex + " не найдена",
+                    Action.NONE, null, true);
         }
 
         Task toDelete = tasks.get(taskIndex - 1);
         Task deleted = taskService.deleteTaskByIdAndTelegramId(toDelete.getId(), chatId);
 
-        return "Задача “" + deleted.getDescription() + "” удалена";
+        return new CommandResponse(
+                "Задача “" + deleted.getDescription() + "” удалена",
+                Action.NONE, null, true);
     }
 }

@@ -1,5 +1,7 @@
 package ru.naujava.taskmanager.controller.command;
 
+import ru.naujava.taskmanager.controller.CommandResponse;
+
 /**
  * Команды бота.
  *
@@ -15,5 +17,5 @@ public interface BotCommand {
     /**
      * Выполнить команду.
      */
-    String execute(String message, Long chatId);
+    CommandResponse execute(String message, Long chatId);
 }

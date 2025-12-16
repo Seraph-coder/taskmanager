@@ -4,9 +4,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.naujava.taskmanager.service.UserService;
+import ru.naujava.taskmanager.state.StateMachine;
+import ru.naujava.taskmanager.state.StateTransition;
 
 /**
- * Тесты для команд бота {@link CommandHandler}.
+ * Тесты для команд бота через {@link StateMachine}.
  *
  * @author Seraph-coder
  * @since 17.11.2025
@@ -14,7 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 public class CommandIntegrationTest {
     @Autowired
-    private CommandHandler commandHandler;
+    private StateMachine stateMachine;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Проверка команд /add и /todo
@@ -24,15 +30,16 @@ public class CommandIntegrationTest {
     @Test
     public void addAndTodoCommands() {
         Long chatId = 12345L;
+        userService.getOrCreateByTelegramId(chatId);
 
-        String responseAdd = commandHandler.handle("/add Купить молоко", chatId);
-        String anotherResponseAdd = commandHandler.handle("/add Купить хлеб", chatId);
-        Assertions.assertNotNull(responseAdd);
-        Assertions.assertNotNull(anotherResponseAdd);
+        StateTransition responseAdd = stateMachine.processMessage(chatId, "/add Купить молоко");
+        StateTransition anotherResponseAdd = stateMachine.processMessage(chatId, "/add Купить хлеб");
+        Assertions.assertNotNull(responseAdd.responseText());
+        Assertions.assertNotNull(anotherResponseAdd.responseText());
 
-        String responseTodo = commandHandler.handle("/todo", chatId);
+        StateTransition responseTodo = stateMachine.processMessage(chatId, "/todo");
         Assertions.assertEquals("1) Купить молоко\n" +
-                "2) Купить хлеб", responseTodo);
+                "2) Купить хлеб", responseTodo.responseText());
     }
 
     /**
@@ -43,17 +50,18 @@ public class CommandIntegrationTest {
     @Test
     public void addWithDuplicateDescription() {
         Long chatId = 54321L;
+        userService.getOrCreateByTelegramId(chatId);
 
-        commandHandler.handle("/add Сделать домашнее задание", chatId);
-        String responseAddDuplicate = commandHandler
-                .handle("/add Сделать домашнее задание", chatId);
+        stateMachine.processMessage(chatId, "/add Сделать домашнее задание");
+        StateTransition responseAddDuplicate = stateMachine
+                .processMessage(chatId, "/add Сделать домашнее задание");
 
         Assertions.assertEquals(
                 "Ошибка: Задача с описанием 'Сделать домашнее задание' уже существует",
-                responseAddDuplicate);
+                responseAddDuplicate.responseText());
 
-        String responseTodo = commandHandler.handle("/todo", chatId);
-        Assertions.assertEquals("1) Сделать домашнее задание", responseTodo);
+        StateTransition responseTodo = stateMachine.processMessage(chatId, "/todo");
+        Assertions.assertEquals("1) Сделать домашнее задание", responseTodo.responseText());
     }
 
     /**
@@ -64,12 +72,13 @@ public class CommandIntegrationTest {
     @Test
     public void deleteCommand() {
         Long chatId = 67890L;
-        commandHandler.handle("/add Позвонить маме", chatId);
-        commandHandler.handle("/add Заплатить за квартиру", chatId);
-        String responseDelete = commandHandler.handle("/delete 1", chatId);
-        Assertions.assertEquals("Задача “Позвонить маме” удалена", responseDelete);
-        String responseTodo = commandHandler.handle("/todo", chatId);
-        Assertions.assertEquals("1) Заплатить за квартиру", responseTodo);
+        userService.getOrCreateByTelegramId(chatId);
+        stateMachine.processMessage(chatId, "/add Позвонить маме");
+        stateMachine.processMessage(chatId, "/add Заплатить за квартиру");
+        StateTransition responseDelete = stateMachine.processMessage(chatId, "/delete 1");
+        Assertions.assertEquals("Задача “Позвонить маме” удалена", responseDelete.responseText());
+        StateTransition responseTodo = stateMachine.processMessage(chatId, "/todo");
+        Assertions.assertEquals("1) Заплатить за квартиру", responseTodo.responseText());
     }
 
     /**
@@ -80,19 +89,57 @@ public class CommandIntegrationTest {
     @Test
     public void deleteWithInvalidTaskNumber() {
         Long chatId = 98765L;
+        userService.getOrCreateByTelegramId(chatId);
 
-        commandHandler.handle("/add Прочитать книгу", chatId);
-        String responseDeleteInvalid = commandHandler.handle("/delete 2", chatId);
-        Assertions.assertEquals("Ошибка: задача 2 не найдена", responseDeleteInvalid);
-        String responseDeleteNegative = commandHandler.handle("/delete -1", chatId);
+        stateMachine.processMessage(chatId, "/add Прочитать книгу");
+        StateTransition responseDeleteInvalid = stateMachine.processMessage(chatId, "/delete 2");
+        Assertions.assertEquals("Ошибка: задача 2 не найдена", responseDeleteInvalid.responseText());
+        StateTransition responseDeleteNegative = stateMachine.processMessage(chatId, "/delete -1");
         Assertions.assertEquals(
-                "Ошибка: номер задачи должен быть положительным числом", responseDeleteNegative);
-        String responseDeleteZero = commandHandler.handle("/delete 0", chatId);
+                "Ошибка: номер задачи должен быть положительным числом",
+                responseDeleteNegative.responseText());
+        StateTransition responseDeleteZero = stateMachine.processMessage(chatId, "/delete 0");
         Assertions.assertEquals(
-                "Ошибка: номер задачи должен быть положительным числом", responseDeleteZero);
+                "Ошибка: номер задачи должен быть положительным числом",
+                responseDeleteZero.responseText());
+        StateTransition responseTodo = stateMachine.processMessage(chatId, "/todo");
         Assertions.assertEquals(
-                "1) Прочитать книгу", commandHandler.handle("/todo", chatId));
-        String responseDeleteNonNumber = commandHandler.handle("/delete abc", chatId);
-        Assertions.assertEquals("Ошибка: номер задачи должен быть числом", responseDeleteNonNumber);
+                "1) Прочитать книгу", responseTodo.responseText());
+        StateTransition responseDeleteNonNumber = stateMachine.processMessage(chatId, "/delete abc");
+        Assertions.assertEquals("Ошибка: номер задачи должен быть числом",
+                responseDeleteNonNumber.responseText());
+    }
+
+    /**
+     * Проверка команды с неизвестным именем.
+     * <br>
+     * Ожидаемое поведение: возвращается сообщение об неизвестной команде.
+     */
+    @Test
+    public void unknownCommand() {
+        Long chatId = 11111L;
+        userService.getOrCreateByTelegramId(chatId);
+
+        StateTransition response = stateMachine.processMessage(chatId, "/unknown");
+
+        Assertions.assertEquals("Неизвестная команда. Введите /help для списка команд",
+                response.responseText());
+        Assertions.assertTrue(response.shouldSendMenu());
+    }
+
+    /**
+     * Проверка обработки пустого сообщения.
+     * <br>
+     * Ожидаемое поведение: возвращается сообщение о пустом сообщении.
+     */
+    @Test
+    public void emptyMessage() {
+        Long chatId = 22222L;
+        userService.getOrCreateByTelegramId(chatId);
+
+        StateTransition response = stateMachine.processMessage(chatId, "");
+
+        Assertions.assertEquals("Пустое сообщение", response.responseText());
+        Assertions.assertFalse(response.shouldSendMenu());
     }
 }

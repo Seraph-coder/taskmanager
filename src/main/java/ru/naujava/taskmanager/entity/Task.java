@@ -11,13 +11,22 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "tasks")
 public class Task {
+    /**
+     * Идентификатор задачи.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Описание задачи.
+     */
     @Column(nullable = false)
     private String description;
 
+    /**
+     * Пользователь, которому принадлежит задача.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

@@ -1,0 +1,40 @@
+package ru.naujava.taskmanager.bot;
+
+/**
+ * Константы для бота.
+ * Добавил константы для callback данных, текстов кнопок и сообщений,
+ * чтобы было проще управлять ими в одном месте.
+ *
+ * @author Seraph-coder
+ * @since 16.12.2025
+ */
+public final class BotConstants {
+    // Callback data
+    public static final String CALLBACK_ADD = "ADD";
+    public static final String CALLBACK_DELETE = "DELETE";
+    public static final String CALLBACK_LIST = "LIST";
+    public static final String CALLBACK_CANCEL = "CANCEL";
+
+    // Текст кнопок
+    public static final String BUTTON_ADD_TASK = "Добавить задачу";
+    public static final String BUTTON_DELETE_TASK = "Удалить задачу";
+    public static final String BUTTON_LIST_TASKS = "Список задач";
+    public static final String BUTTON_CANCEL = "Отменить";
+
+    // Сообщения
+    public static final String MSG_CHOOSE_ACTION = "Выберите действие:";
+    public static final String MSG_UNKNOWN_COMMAND = "Неизвестная команда. Введите /help для списка команд";
+    public static final String MSG_EMPTY_CALLBACK = "Пустые данные обратного вызова";
+    public static final String MSG_UNKNOWN_CALLBACK = "Неизвестные данные обратного вызова";
+    public static final String MSG_TASKS_EMPTY = "Список задач пуст";
+    public static final String MSG_ENTER_TASK_DESCRIPTION = "Введите описание задачи";
+    public static final String MSG_ENTER_TASK_NUMBER = "Введите номер задачи для удаления";
+    public static final String MSG_ACTION_CANCELLED = "Действие отменено";
+    public static final String MSG_UNKNOWN_USER = "Неизвестный пользователь";
+
+    /**
+     * Приватный конструктор для предотвращения создания экземпляров класса.
+     */
+    private BotConstants() {
+    }
+}

@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import ru.naujava.taskmanager.bot.state.StateMachine;
-import ru.naujava.taskmanager.entity.UserStateEnum;
+import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.service.TaskService;
 import ru.naujava.taskmanager.service.UserService;
+import ru.naujava.taskmanager.state.StateMachine;
+import ru.naujava.taskmanager.state.StateTransition;
 
 import java.util.Optional;
 
@@ -24,19 +26,21 @@ public class StateMachineIntegrationTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TaskService taskService;
+
     /**
-     * Тест успешного получения созданного состояния пользователя.
+     * Тест получения состояния пользователя, который существует и имеет состояние DEFAULT.
      * <br>
-     * Ожидаемое поведение: возвращается текущее состояние пользователя.
+     * Ожидаемое поведение: возвращается Optional.empty(), поскольку DEFAULT не считается активным состоянием.
      */
     @Test
     @Transactional
     public void getUserStateSuccess() {
         userService.getOrCreateByTelegramId(2000L);
 
-        UserStateEnum state = stateMachine.getState(2000L)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователя не существует"));
-        Assertions.assertEquals(UserStateEnum.DEFAULT, state);
+        Optional<UserState> stateOpt = stateMachine.getState(2000L);
+        Assertions.assertTrue(stateOpt.isEmpty());
     }
 
     /**
@@ -47,7 +51,7 @@ public class StateMachineIntegrationTest {
     @Test
     @Transactional
     public void getUserStateNotFound() {
-        Optional<UserStateEnum> userState = stateMachine.getState(2000L);
+        Optional<UserState> userState = stateMachine.getState(2000L);
         Assertions.assertTrue(userState.isEmpty());
     }
 
@@ -60,10 +64,8 @@ public class StateMachineIntegrationTest {
     @Transactional
     public void setUserStateSuccess() {
         userService.getOrCreateByTelegramId(2200L);
-        stateMachine.setState(2200L, UserStateEnum.AWAITING_TASK_DESCRIPTION);
-        UserStateEnum state = stateMachine.getState(2200L)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователя не существует"));
-        Assertions.assertEquals(UserStateEnum.AWAITING_TASK_DESCRIPTION, state);
+        stateMachine.setState(2200L, UserState.AWAITING_TASK_DESCRIPTION);
+        Assertions.assertTrue(stateMachine.getState(2200L).isPresent());
     }
 
     /**
@@ -74,7 +76,50 @@ public class StateMachineIntegrationTest {
     @Test
     @Transactional
     public void resetUserStateSuccess() {
-        // Нет смысла тестировать отдельно, тк reset вызывает setState,
-        // а setState уже протестирован на успешное изменение состояния.
+        userService.getOrCreateByTelegramId(2100L);
+        stateMachine.setState(2100L, UserState.AWAITING_TASK_DESCRIPTION);
+        Assertions.assertTrue(stateMachine.getState(2100L).isPresent());
+
+        stateMachine.resetState(2100L);
+        Assertions.assertTrue(stateMachine.getState(2100L).isEmpty());
+    }
+
+    /**
+     * Тест обработки сообщения для добавления задачи через состояние.
+     * <br>
+     * Ожидаемое поведение: задача добавляется, состояние сбрасывается.
+     */
+    @Test
+    @Transactional
+    public void processMessageAddTaskSuccess() {
+        userService.getOrCreateByTelegramId(2300L);
+        stateMachine.setState(2300L, UserState.AWAITING_TASK_DESCRIPTION);
+
+        StateTransition response = stateMachine.processMessage(2300L, "Новая задача");
+
+        Assertions.assertEquals("Задача “Новая задача” добавлена", response.responseText());
+        Assertions.assertEquals(UserState.DEFAULT, response.newState());
+        Assertions.assertTrue(response.shouldSendMenu());
+        Assertions.assertTrue(stateMachine.getState(2300L).isEmpty());
+    }
+
+    /**
+     * Тест обработки сообщения для удаления задачи через состояние.
+     * <br>
+     * Ожидаемое поведение: задача удаляется, состояние сбрасывается.
+     */
+    @Test
+    @Transactional
+    public void processMessageDeleteTaskSuccess() {
+        userService.getOrCreateByTelegramId(2400L);
+        taskService.createTask("Задача для удаления", 2400L);
+        stateMachine.setState(2400L, UserState.AWAITING_TASK_ID_FOR_DELETION);
+
+        StateTransition response = stateMachine.processMessage(2400L, "1");
+
+        Assertions.assertEquals("Задача “Задача для удаления” удалена", response.responseText());
+        Assertions.assertEquals(UserState.DEFAULT, response.newState());
+        Assertions.assertTrue(response.shouldSendMenu());
+        Assertions.assertTrue(stateMachine.getState(2400L).isEmpty());
     }
 }

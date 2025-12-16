@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import ru.naujava.taskmanager.entity.User;
 
+import java.util.Optional;
+
 /**
  * Тесты для сервиса пользователей {@link UserService}.
  *
@@ -27,8 +29,9 @@ public class UserServiceIntegrationTest {
     @Test
     public void getOrCreateByTelegramIdAndFindByTelegramId() {
         userService.getOrCreateByTelegramId(1L);
-        User foundUser = userService.findByTelegramId(1L).orElseThrow();
-        Assertions.assertEquals(1L, foundUser.getTelegramId());
+        Optional<User> userOpt = userService.findByTelegramId(1L);
+        Assertions.assertTrue(userOpt.isPresent());
+        Assertions.assertEquals(1L, userOpt.get().getTelegramId());
     }
 
     /**
