@@ -17,9 +17,10 @@
 * **entity** — JPA-сущности (`Task`, `User`, `UserState`, `TelegramIdState`)
 * **repository** — интерфейсы JPA (`TaskRepository`, `UserRepository`, `TelegramIdStateRepository`)
 * **service** — бизнес-логика (`TaskService`, `UserService`, `TelegramIdStateService`)
-* **state** — обработка состояний (`StateMachine`, handlers для состояний)
-* **controller** — команды бота (`BotCommand` и реализации в `controller/commands`)
-* **bot** — интеграция с Telegram API (`TelegramBot`, `BotMessageProcessor`, `KeyboardBuilder`)
+* **state** — обработка состояний (`StateMachine`, `StateTransition`, handlers для состояний)
+* **controller** — обработка команд и callback (`BotCommand`, `CommandResponse`, `CallbackHandler`
+* и реализации в `controller/commands`)
+* **bot** — интеграция с Telegram API (`TelegramBot`, `BotMessageProcessor`, `KeyboardBuilder`, `BotConstants`)
 * **config** — конфигурация бота (`BotConfig`)
 
 ---
@@ -107,8 +108,7 @@ src/
      ├── controller/        # Команды бота
      │    └── commands/     # Реализации команд
      ├── bot/               # Telegram-интеграция
-     ├── config/            # Конфигурация бота
-     └── util/              # Утилиты
+     └── config/            # Конфигурация бота
 ```
 
 ---
