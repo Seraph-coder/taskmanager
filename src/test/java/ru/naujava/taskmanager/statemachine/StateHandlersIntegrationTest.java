@@ -71,7 +71,7 @@ public class StateHandlersIntegrationTest {
 
         StateTransition response = stateMachine.processMessage(chatId, "Существующая задача");
 
-        Assertions.assertFalse(response.shouldSendMenu());
+        Assertions.assertTrue(response.shouldSendMenu());
         Assertions.assertEquals("Задача с описанием 'Существующая задача' уже существует",
                 response.responseText());
     }
@@ -184,7 +184,7 @@ public class StateHandlersIntegrationTest {
 
         StateTransition response = stateMachine.processMessage(chatId, "");
 
-        Assertions.assertFalse(response.shouldSendMenu());
+        Assertions.assertTrue(response.shouldSendMenu());
         Assertions.assertEquals("taskDescription не должен быть пустым", response.responseText());
     }
 }

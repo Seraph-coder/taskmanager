@@ -83,23 +83,7 @@ public class BotMessageProcessor {
                     keyboardBuilder.buildMainMenu(), Action.NONE));
         }
 
-        switch (response.action()) {
-            case SET_STATE -> {
-                stateMachine.setState(chatId, response.newState());
-            }
-            case SEND_CANCEL -> {
-                responses.add(new BotResponse(chatId, BotConstants.MSG_CHOOSE_ACTION,
-                        keyboardBuilder.buildCancelKeyboard(),
-                        Action.NONE));
-                stateMachine.setState(chatId, response.newState());
-            }
-            case CANCEL_ADD_TASK, CANCEL_DELETE_TASK -> {
-                stateMachine.resetState(chatId);
-            }
-            case NONE -> {
-                // Нет дополнительных действий
-            }
-        }
+        response.action().handle(stateMachine, keyboardBuilder, responses, response, chatId);
 
         return responses;
     }

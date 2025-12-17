@@ -32,11 +32,16 @@ public class StateMachine {
         this.telegramIdStateService = telegramIdStateService;
         this.allowedTransitions = transitionConfig.getAllowedTransitions();
         MessageHandler tempDefault = null;
+        Set<UserState> seenStates = new HashSet<>();
         for (MessageHandler handler : stateHandlers) {
-            Optional<UserState> state = handler.getHandledState();
-            if (state.isPresent()) {
-                this.handlers.put(state.get(), handler);
-                if (state.get() == UserState.DEFAULT) {
+            Optional<UserState> stateOpt = handler.getHandledState();
+            if (stateOpt.isPresent()) {
+                UserState state = stateOpt.get();
+                if (!seenStates.add(state)) {
+                    throw new IllegalStateException("Duplicate handler for state: " + state);
+                }
+                this.handlers.put(state, handler);
+                if (state == UserState.DEFAULT) {
                     tempDefault = handler;
                 }
             }
@@ -44,6 +49,12 @@ public class StateMachine {
         this.defaultHandler = tempDefault;
         if (defaultHandler == null) {
             throw new IllegalStateException("No default handler found for UserState.DEFAULT");
+        }
+
+        for (UserState state : allowedTransitions.keySet()) {
+            if (!handlers.containsKey(state)) {
+                throw new IllegalStateException("No handler found for state: " + state);
+            }
         }
     }
 
