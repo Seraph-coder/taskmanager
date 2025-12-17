@@ -29,7 +29,6 @@ public final class BotConstants {
     public static final String MSG_TASKS_EMPTY = "Список задач пуст";
     public static final String MSG_ENTER_TASK_DESCRIPTION = "Введите описание задачи";
     public static final String MSG_ENTER_TASK_NUMBER = "Введите номер задачи для удаления";
-    public static final String MSG_ACTION_CANCELLED = "Действие отменено";
     public static final String MSG_UNKNOWN_USER = "Неизвестный пользователь";
 
     /**

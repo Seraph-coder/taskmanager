@@ -38,10 +38,10 @@ public class AwaitingTaskIdForDeletionHandler implements StateHandler, MessageHa
         } catch (NumberFormatException e) {
             log.warn("Неверный номер задачи для chatId={}: {}", chatId, text, e);
             return new StateTransition("Неверный номер задачи",
-                    UserState.AWAITING_TASK_ID_FOR_DELETION);
+                    UserState.DEFAULT, true);
         } catch (IllegalArgumentException e) {
             log.warn("Ошибка при удалении задачи для chatId={}: {}", chatId, e.getMessage(), e);
-            return new StateTransition(e.getMessage(), UserState.AWAITING_TASK_ID_FOR_DELETION);
+            return new StateTransition(e.getMessage(), UserState.DEFAULT, true);
         }
     }
 }

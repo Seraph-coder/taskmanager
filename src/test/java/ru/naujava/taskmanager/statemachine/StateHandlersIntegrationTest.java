@@ -112,14 +112,14 @@ public class StateHandlersIntegrationTest {
 
         StateTransition response = stateMachine.processMessage(chatId, "abc");
 
-        Assertions.assertFalse(response.shouldSendMenu());
+        Assertions.assertTrue(response.shouldSendMenu());
         Assertions.assertEquals("Неверный номер задачи", response.responseText());
     }
 
     /**
      * Тест удаления несуществующей задачи через состояние AWAITING_TASK_ID_FOR_DELETION.
      * <br>
-     * Ожидаемое поведение: возвращается ошибка, состояние не сбрасывается.
+     * Ожидаемое поведение: возвращается ошибка, состояние сбрасывается, отправляется меню.
      */
     @Test
     @Transactional
@@ -130,14 +130,14 @@ public class StateHandlersIntegrationTest {
 
         StateTransition response = stateMachine.processMessage(chatId, "1");
 
-        Assertions.assertFalse(response.shouldSendMenu());
+        Assertions.assertTrue(response.shouldSendMenu());
         Assertions.assertEquals("Задача с номером 1 не найдена", response.responseText());
     }
 
     /**
      * Тест удаления задачи с нулевым индексом через состояние AWAITING_TASK_ID_FOR_DELETION.
      * <br>
-     * Ожидаемое поведение: возвращается ошибка, состояние не сбрасывается.
+     * Ожидаемое поведение: возвращается ошибка, состояние сбрасывается, отправляется меню.
      */
     @Test
     @Transactional
@@ -148,14 +148,14 @@ public class StateHandlersIntegrationTest {
 
         StateTransition response = stateMachine.processMessage(chatId, "0");
 
-        Assertions.assertFalse(response.shouldSendMenu());
+        Assertions.assertTrue(response.shouldSendMenu());
         Assertions.assertEquals("Номер задачи должен быть положительным", response.responseText());
     }
 
     /**
      * Тест удаления задачи с отрицательным индексом через состояние AWAITING_TASK_ID_FOR_DELETION.
      * <br>
-     * Ожидаемое поведение: возвращается ошибка, состояние не сбрасывается.
+     * Ожидаемое поведение: возвращается ошибка, состояние сбрасывается, отправляется меню.
      */
     @Test
     @Transactional
@@ -166,7 +166,7 @@ public class StateHandlersIntegrationTest {
 
         StateTransition response = stateMachine.processMessage(chatId, "-1");
 
-        Assertions.assertFalse(response.shouldSendMenu());
+        Assertions.assertTrue(response.shouldSendMenu());
         Assertions.assertEquals("Номер задачи должен быть положительным", response.responseText());
     }
 

@@ -93,11 +93,7 @@ public class StateMachine {
     public void setState(Long chatId, UserState state) {
         Objects.requireNonNull(chatId, "chatId не может быть null");
         Objects.requireNonNull(state, "state не может быть null");
-        boolean success = telegramIdStateService.changeUserState(chatId, state);
-        if (!success) {
-            throw new IllegalStateException("Не удалось установить состояние " +
-                    state + " для chatId=" + chatId);
-        }
+        telegramIdStateService.changeUserState(chatId, state);
     }
 
     /**
@@ -105,9 +101,6 @@ public class StateMachine {
      */
     public void resetState(Long chatId) {
         Objects.requireNonNull(chatId, "chatId не может быть null");
-        boolean success = telegramIdStateService.changeUserState(chatId, UserState.DEFAULT);
-        if (!success) {
-            throw new IllegalStateException("Не удалось сбросить состояние для chatId=" + chatId);
-        }
+        telegramIdStateService.changeUserState(chatId, UserState.DEFAULT);
     }
 }

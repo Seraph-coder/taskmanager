@@ -1,7 +1,5 @@
 package ru.naujava.taskmanager.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.entity.TelegramIdState;
@@ -22,7 +20,6 @@ import java.util.Optional;
 public class TelegramIdStateService {
     private final TelegramIdStateRepository telegramIdStateRepository;
     private final UserService userService;
-    private final Logger log = LoggerFactory.getLogger(TelegramIdStateService.class);
 
     /**
      * Конструктор сервиса состояния пользователя.
@@ -68,19 +65,13 @@ public class TelegramIdStateService {
      * Изменяет состояние пользователя с указанным telegramId.
      * Если состояние не найдено, создает его.
      *
-     * @return true если состояние успешно изменено, false в случае ошибки
+     * @throws IllegalArgumentException если telegramId или newState равны null, или пользователь не существует
      */
-    public boolean changeUserState(Long telegramId, UserState newState) {
-        try {
-            Objects.requireNonNull(telegramId, "telegramId не может быть null");
-            Objects.requireNonNull(newState, "newState не может быть null");
-            TelegramIdState userState = getOrCreateUserStateEntity(telegramId);
-            userState.setState(newState);
-            telegramIdStateRepository.save(userState);
-            return true;
-        } catch (Exception e) {
-            log.warn("Ошибка изменения состояния: {}", e.getMessage(), e);
-            return false;
-        }
+    public void changeUserState(Long telegramId, UserState newState) {
+        Objects.requireNonNull(telegramId, "telegramId не может быть null");
+        Objects.requireNonNull(newState, "newState не может быть null");
+        TelegramIdState userState = getOrCreateUserStateEntity(telegramId);
+        userState.setState(newState);
+        telegramIdStateRepository.save(userState);
     }
 }

@@ -20,7 +20,7 @@ public class TelegramIdState {
     /**
      * Текущее состояние пользователя.
      */
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserState state = UserState.DEFAULT;
 

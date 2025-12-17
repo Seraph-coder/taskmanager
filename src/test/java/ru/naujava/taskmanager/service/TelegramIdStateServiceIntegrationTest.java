@@ -68,42 +68,45 @@ public class TelegramIdStateServiceIntegrationTest {
     @Test
     public void changeUserStateSuccess() {
         userService.getOrCreateByTelegramId(1400L);
-        boolean result = telegramIdStateService.changeUserState(1400L, UserState.AWAITING_TASK_DESCRIPTION);
-        Assertions.assertTrue(result);
-        Assertions.assertTrue(telegramIdStateRepository.existsById(1400L));
+        telegramIdStateService.changeUserState(1400L, UserState.AWAITING_TASK_DESCRIPTION);
+        UserState state = telegramIdStateService.getOrCreateUserState(1400L);
+        Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, state);
     }
 
     /**
      * Тест попытки изменения состояния пользователя, который не существует.
      * <br>
-     * Ожидаемое поведение: возвращается false.
+     * Ожидаемое поведение: выбрасывается IllegalArgumentException.
      */
     @Test
     public void changeUserStateUserNotFound() {
-        boolean result = telegramIdStateService.changeUserState(999998L, UserState.AWAITING_TASK_DESCRIPTION);
-        Assertions.assertFalse(result);
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                telegramIdStateService.changeUserState(999998L, UserState.AWAITING_TASK_DESCRIPTION)
+        );
     }
 
     /**
      * Тест изменения состояния пользователя с null telegramId.
      * <br>
-     * Ожидаемое поведение: возвращается false.
+     * Ожидаемое поведение: выбрасывается NullPointerException.
      */
     @Test
     public void changeUserStateNullTelegramId() {
-        boolean result = telegramIdStateService.changeUserState(null, UserState.AWAITING_TASK_DESCRIPTION);
-        Assertions.assertFalse(result);
+        Assertions.assertThrows(NullPointerException.class, () ->
+                telegramIdStateService.changeUserState(null, UserState.AWAITING_TASK_DESCRIPTION)
+        );
     }
 
     /**
      * Тест изменения состояния пользователя с null новым состоянием.
      * <br>
-     * Ожидаемое поведение: возвращается false.
+     * Ожидаемое поведение: выбрасывается NullPointerException.
      */
     @Test
     public void changeUserStateNullNewState() {
         userService.getOrCreateByTelegramId(1300L);
-        boolean result = telegramIdStateService.changeUserState(1300L, null);
-        Assertions.assertFalse(result);
+        Assertions.assertThrows(NullPointerException.class, () ->
+                telegramIdStateService.changeUserState(1300L, null)
+        );
     }
 }

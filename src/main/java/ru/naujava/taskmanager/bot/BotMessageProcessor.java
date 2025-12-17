@@ -68,7 +68,7 @@ public class BotMessageProcessor {
         CommandResponse response = callbackHandler.handle(data, chatId);
         responses.add(new BotResponse(chatId, response.text(), response.keyboard(), response.action()));
 
-        if (response.action() != Action.NONE || response.shouldSendMenu()) {
+        if (response.shouldSendMenu()) {
             responses.add(new BotResponse(chatId, BotConstants.MSG_CHOOSE_ACTION,
                     keyboardBuilder.buildMainMenu(), Action.NONE));
         }
@@ -78,13 +78,16 @@ public class BotMessageProcessor {
                 stateMachine.setState(chatId, response.newState());
             }
             case SEND_CANCEL -> {
-                responses.add(new BotResponse(chatId, "", keyboardBuilder.buildCancelKeyboard(),
+                responses.add(new BotResponse(chatId, BotConstants.MSG_CHOOSE_ACTION,
+                        keyboardBuilder.buildCancelKeyboard(),
                         Action.NONE));
+                stateMachine.setState(chatId, response.newState());
             }
             case CANCEL_ADD_TASK, CANCEL_DELETE_TASK -> {
                 stateMachine.resetState(chatId);
             }
-            case NONE, SEND_MENU -> {
+            case NONE -> {
+                // Нет дополнительных действий
             }
         }
 

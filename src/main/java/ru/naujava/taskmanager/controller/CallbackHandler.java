@@ -55,7 +55,7 @@ public class CallbackHandler {
                     case AWAITING_TASK_ID_FOR_DELETION -> Action.CANCEL_DELETE_TASK;
                     default -> Action.NONE;
                 };
-                yield new CommandResponse(BotConstants.MSG_ACTION_CANCELLED, action,
+                yield new CommandResponse(BotConstants.MSG_CHOOSE_ACTION, action,
                         null, true);
             }
             default -> {
