@@ -1,5 +1,7 @@
 package ru.naujava.taskmanager.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.entity.TelegramIdState;
@@ -18,6 +20,7 @@ import java.util.Optional;
 @Service
 @Transactional
 public class TelegramIdStateService {
+    private final Logger log = LoggerFactory.getLogger(TelegramIdStateService.class);
     private final TelegramIdStateRepository telegramIdStateRepository;
     private final UserService userService;
 
@@ -58,6 +61,7 @@ public class TelegramIdStateService {
         TelegramIdState newUserState = new TelegramIdState();
         newUserState.setTelegramId(telegramId);
         telegramIdStateRepository.save(newUserState);
+        log.info("Создано новое состояние для пользователя с telegramId: {}", telegramId);
         return newUserState;
     }
 

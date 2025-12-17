@@ -45,10 +45,14 @@ public class BotMessageProcessor {
         List<BotResponse> responses = new ArrayList<>();
         try {
             if (update.hasCallbackQuery()) {
-                responses.addAll(processCallback(update.getCallbackQuery()));
+                CallbackQuery callback = update.getCallbackQuery();
+                Long chatId = callback.getMessage().getChatId();
+                log.info("Обработка callback от chatId: {}", chatId);
+                responses.addAll(processCallback(callback));
             } else if (update.hasMessage() && update.getMessage().hasText()) {
                 Long chatId = update.getMessage().getChatId();
                 String text = update.getMessage().getText();
+                log.info("Обработка текстового сообщения от chatId: {}", chatId);
                 responses.addAll(processTextMessage(chatId, text));
             }
         } catch (Exception e) {

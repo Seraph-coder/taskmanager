@@ -16,9 +16,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * Находит пользователя по его Telegram ID.
      */
     Optional<User> findByTelegramId(Long telegramId);
-
-    /**
-     * Удаляет пользователя по его Telegram ID.
-     */
-    void deleteByTelegramId(Long telegramId);
 }

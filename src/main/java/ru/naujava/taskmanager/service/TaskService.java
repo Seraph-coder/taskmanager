@@ -1,5 +1,7 @@
 package ru.naujava.taskmanager.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.bot.BotConstants;
@@ -19,6 +21,7 @@ import java.util.Objects;
 @Service
 @Transactional
 public class TaskService {
+    private final Logger log = LoggerFactory.getLogger(TaskService.class);
     private final TaskRepository taskRepository;
     private final UserService userService;
 
@@ -62,7 +65,9 @@ public class TaskService {
         Task task = new Task();
         task.setUser(user);
         task.setDescription(taskDescription);
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+        log.info("Создана задача '{}' для пользователя с telegramId: {}", taskDescription, telegramId);
+        return savedTask;
     }
 
     /**
@@ -77,6 +82,7 @@ public class TaskService {
         Task task = taskRepository.findByIdAndUser_TelegramId(taskId, telegramId)
                 .orElseThrow(() -> new IllegalArgumentException("Задача не найдена"));
         taskRepository.delete(task);
+        log.info("Удалена задача с id: {} для пользователя с telegramId: {}", taskId, telegramId);
         return task;
     }
 
@@ -98,6 +104,7 @@ public class TaskService {
 
         Task toDelete = tasks.get(taskIndex - 1);
         taskRepository.delete(toDelete);
+        log.info("Удалена задача '{}' (индекс {}) для пользователя с telegramId: {}", toDelete.getDescription(), taskIndex, telegramId);
         return toDelete;
     }
 

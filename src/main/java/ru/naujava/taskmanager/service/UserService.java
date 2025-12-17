@@ -1,5 +1,7 @@
 package ru.naujava.taskmanager.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.entity.User;
@@ -16,6 +18,7 @@ import java.util.Optional;
 @Service
 @Transactional
 public class UserService {
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
 
     /**
@@ -48,23 +51,9 @@ public class UserService {
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setTelegramId(telegramId);
-                    return userRepository.save(newUser);
+                    User saved = userRepository.save(newUser);
+                    log.info("Создан новый пользователь с telegramId: {}", telegramId);
+                    return saved;
                 });
-    }
-
-    /**
-     * Удаляет пользователя по Telegram ID.
-     * @throws IllegalArgumentException если пользователь не найден
-     */
-    public void deleteByTelegramId(Long telegramId) {
-        if (telegramId == null) {
-            throw new IllegalArgumentException("Telegram ID не может быть null");
-        }
-        if (telegramId <= 0) {
-            throw new IllegalArgumentException("Telegram ID должен быть положительным числом");
-        }
-        userRepository.findByTelegramId(telegramId)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с таким Telegram ID не найден"));
-        userRepository.deleteByTelegramId(telegramId);
     }
 }

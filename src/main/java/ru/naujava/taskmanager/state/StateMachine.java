@@ -49,9 +49,11 @@ public class StateMachine {
         Objects.requireNonNull(chatId, "chatId не может быть null");
         Objects.requireNonNull(text, "text не может быть null");
         try {
+            log.info("Обработка сообщения для chatId={}, текст: {}", chatId, text);
             UserState currentState = telegramIdStateService.getOrCreateUserState(chatId);
             MessageHandler handler = handlers.getOrDefault(currentState, handlers.get(UserState.DEFAULT));
             StateTransition transition = handler.handle(chatId, text);
+            log.info("Текущее состояние: {}, Новое состояние: {}", currentState, transition.newState());
             if (transition.newState() != null && !transition.newState().equals(currentState)) {
                 Set<UserState> allowed = allowedTransitions.getOrDefault(currentState, Set.of());
                 if (allowed.contains(transition.newState())) {
