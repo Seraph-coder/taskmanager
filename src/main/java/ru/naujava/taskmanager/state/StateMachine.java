@@ -19,7 +19,7 @@ import java.util.*;
 public class StateMachine {
     private final TelegramIdStateService telegramIdStateService;
     private final Map<UserState, MessageHandler> handlers = new HashMap<>();
-    private final Map<UserState, Set<UserState>> allowedTransitions = new HashMap<>();
+    private final Map<UserState, Set<UserState>> allowedTransitions;
     private final Logger log = LoggerFactory.getLogger(StateMachine.class);
     private final MessageHandler defaultHandler;
 
@@ -27,13 +27,16 @@ public class StateMachine {
      * Конструктор стейтмашины.
      */
     public StateMachine(TelegramIdStateService telegramIdStateService,
-                        List<MessageHandler> stateHandlers) {
+                        List<MessageHandler> stateHandlers,
+                        TransitionConfig transitionConfig) {
         this.telegramIdStateService = telegramIdStateService;
+        this.allowedTransitions = transitionConfig.getAllowedTransitions();
         MessageHandler tempDefault = null;
         for (MessageHandler handler : stateHandlers) {
-            if (handler instanceof StateHandler sh) {
-                this.handlers.put(sh.getState(), handler);
-                if (sh.getState() == UserState.DEFAULT) {
+            Optional<UserState> state = handler.getHandledState();
+            if (state.isPresent()) {
+                this.handlers.put(state.get(), handler);
+                if (state.get() == UserState.DEFAULT) {
                     tempDefault = handler;
                 }
             }
@@ -42,13 +45,6 @@ public class StateMachine {
         if (defaultHandler == null) {
             throw new IllegalStateException("No default handler found for UserState.DEFAULT");
         }
-        // Определение допустимых переходов
-        allowedTransitions.put(UserState.DEFAULT,
-                Set.of(UserState.AWAITING_TASK_DESCRIPTION, UserState.AWAITING_TASK_ID_FOR_DELETION));
-        allowedTransitions.put(UserState.AWAITING_TASK_DESCRIPTION,
-                Set.of(UserState.DEFAULT));
-        allowedTransitions.put(UserState.AWAITING_TASK_ID_FOR_DELETION,
-                Set.of(UserState.DEFAULT));
     }
 
     /**

@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Лимитер сообщений для предотвращения флуда.
+ *
+ * @author Seraph-coder
+ * @since 14.12.2025
  */
 @Component
 public class MessageRateLimiter {

@@ -2,6 +2,8 @@ package ru.naujava.taskmanager.state;
 
 import ru.naujava.taskmanager.entity.UserState;
 
+import java.util.Optional;
+
 /**
  * Интерфейс для обработки сообщений в зависимости от состояния.
  * Объединяет обработку команд и состояний.
@@ -12,9 +14,11 @@ import ru.naujava.taskmanager.entity.UserState;
 public interface MessageHandler {
 
     /**
-     * Возвращает состояние, которое обрабатывает этот хендлер.
+     * Возвращает состояние, которое обрабатывает этот хендлер, если применимо.
      */
-    UserState getState();
+    default Optional<UserState> getHandledState() {
+        return Optional.empty();
+    }
 
     /**
      * Обрабатывает сообщение и возвращает переход состояния.

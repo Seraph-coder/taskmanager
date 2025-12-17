@@ -43,13 +43,11 @@ public class MessageRateLimiterTest {
     public void testRateLimitResetAfterTime() throws InterruptedException {
         MessageRateLimiter rateLimiter = new MessageRateLimiter(2, 2);
         Long chatId = 3L;
-        for (int i = 0; i < 3; i++) {
-            if (i < 2) {
-                Assertions.assertFalse(rateLimiter.isRateLimited(chatId));
-            } else {
-                Assertions.assertTrue(rateLimiter.isRateLimited(chatId));
-            }
-        }
+
+        Assertions.assertFalse(rateLimiter.isRateLimited(chatId));
+        Assertions.assertFalse(rateLimiter.isRateLimited(chatId));
+        Assertions.assertTrue(rateLimiter.isRateLimited(chatId));
+
         Thread.sleep(2);
         Assertions.assertFalse(rateLimiter.isRateLimited(chatId));
     }
@@ -59,7 +57,7 @@ public class MessageRateLimiterTest {
      */
     @Test
     public void testIndependentLimitsForDifferentUsers() {
-        MessageRateLimiter rateLimiter = new MessageRateLimiter(2, 3);
+        MessageRateLimiter rateLimiter = new MessageRateLimiter(2, 2);
         Long chatId1 = 4L;
         Long chatId2 = 5L;
         for (int i = 0; i < 3; i++) {

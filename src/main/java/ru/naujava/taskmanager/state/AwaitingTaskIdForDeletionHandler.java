@@ -9,6 +9,9 @@ import ru.naujava.taskmanager.service.TaskService;
 
 /**
  * Обработчик состояния AWAITING_TASK_ID_FOR_DELETION.
+ *
+ * @author Seraph-coder
+ * @since 12.12.2025
  */
 @Component
 public class AwaitingTaskIdForDeletionHandler implements StateHandler, MessageHandler {

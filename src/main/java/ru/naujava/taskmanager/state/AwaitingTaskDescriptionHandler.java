@@ -8,6 +8,9 @@ import ru.naujava.taskmanager.service.TaskService;
 
 /**
  * Обработчик состояния AWAITING_TASK_DESCRIPTION.
+ *
+ * @author Seraph-coder
+ * @since 12.12.2025
  */
 @Component
 public class AwaitingTaskDescriptionHandler implements StateHandler, MessageHandler {

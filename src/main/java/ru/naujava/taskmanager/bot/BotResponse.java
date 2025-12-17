@@ -10,6 +10,7 @@ import ru.naujava.taskmanager.controller.Action;
  * @param text     Текст сообщения
  * @param keyboard Клавиатура (может быть null)
  * @param action   Действие
+ *
  * @author Seraph-coder
  * @since 16.12.2025
  */
