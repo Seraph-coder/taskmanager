@@ -21,6 +21,7 @@ public class StateMachine {
     private final Map<UserState, MessageHandler> handlers = new HashMap<>();
     private final Map<UserState, Set<UserState>> allowedTransitions = new HashMap<>();
     private final Logger log = LoggerFactory.getLogger(StateMachine.class);
+    private final MessageHandler defaultHandler;
 
     /**
      * Конструктор стейтмашины.
@@ -28,10 +29,18 @@ public class StateMachine {
     public StateMachine(TelegramIdStateService telegramIdStateService,
                         List<MessageHandler> stateHandlers) {
         this.telegramIdStateService = telegramIdStateService;
+        MessageHandler tempDefault = null;
         for (MessageHandler handler : stateHandlers) {
             if (handler instanceof StateHandler sh) {
                 this.handlers.put(sh.getState(), handler);
+                if (sh.getState() == UserState.DEFAULT) {
+                    tempDefault = handler;
+                }
             }
+        }
+        this.defaultHandler = tempDefault;
+        if (defaultHandler == null) {
+            throw new IllegalStateException("No default handler found for UserState.DEFAULT");
         }
         // Определение допустимых переходов
         allowedTransitions.put(UserState.DEFAULT,
@@ -51,7 +60,7 @@ public class StateMachine {
         try {
             log.info("Обработка сообщения для chatId={}, текст: {}", chatId, text);
             UserState currentState = telegramIdStateService.getOrCreateUserState(chatId);
-            MessageHandler handler = handlers.getOrDefault(currentState, handlers.get(UserState.DEFAULT));
+            MessageHandler handler = handlers.getOrDefault(currentState, defaultHandler);
             StateTransition transition = handler.handle(chatId, text);
             log.info("Текущее состояние: {}, Новое состояние: {}", currentState, transition.newState());
             if (transition.newState() != null && !transition.newState().equals(currentState)) {

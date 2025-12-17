@@ -31,6 +31,10 @@ public final class BotConstants {
     public static final String MSG_ENTER_TASK_NUMBER = "Введите номер задачи для удаления";
     public static final String MSG_UNKNOWN_USER = "Неизвестный пользователь";
 
+    // Ограничения на частоту сообщений
+    public static final int MAX_MESSAGES_PER_MINUTE = 10;
+    public static final long TIME_WINDOW_MS = 60000;
+
     /**
      * Приватный конструктор для предотвращения создания экземпляров класса.
      */

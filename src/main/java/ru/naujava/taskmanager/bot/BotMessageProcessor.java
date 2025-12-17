@@ -26,16 +26,18 @@ public class BotMessageProcessor {
     private final StateMachine stateMachine;
     private final CallbackHandler callbackHandler;
     private final KeyboardBuilder keyboardBuilder;
+    private final MessageRateLimiter rateLimiter;
     private final Logger log = LoggerFactory.getLogger(BotMessageProcessor.class);
 
     /**
      * Конструктор процессора.
      */
     public BotMessageProcessor(StateMachine stateMachine, CallbackHandler callbackHandler,
-                               KeyboardBuilder keyboardBuilder) {
+                               KeyboardBuilder keyboardBuilder, MessageRateLimiter rateLimiter) {
         this.stateMachine = stateMachine;
         this.callbackHandler = callbackHandler;
         this.keyboardBuilder = keyboardBuilder;
+        this.rateLimiter = rateLimiter;
     }
 
     /**
@@ -46,14 +48,18 @@ public class BotMessageProcessor {
         try {
             if (update.hasCallbackQuery()) {
                 CallbackQuery callback = update.getCallbackQuery();
-                Long chatId = callback.getMessage().getChatId();
-                log.info("Обработка callback от chatId: {}", chatId);
+                Long callbackChatId = callback.getMessage().getChatId();
+                log.info("Обработка callback от chatId: {}", callbackChatId);
                 responses.addAll(processCallback(callback));
             } else if (update.hasMessage() && update.getMessage().hasText()) {
-                Long chatId = update.getMessage().getChatId();
+                Long messageChatId = update.getMessage().getChatId();
                 String text = update.getMessage().getText();
-                log.info("Обработка текстового сообщения от chatId: {}", chatId);
-                responses.addAll(processTextMessage(chatId, text));
+                if (rateLimiter.isRateLimited(messageChatId)) {
+                    log.warn("Rate limit exceeded for chatId: {}", messageChatId);
+                    return List.of(new BotResponse(messageChatId, "Слишком много сообщений. Подождите минуту.", null, Action.NONE));
+                }
+                log.info("Обработка текстового сообщения от chatId: {}", messageChatId);
+                responses.addAll(processTextMessage(messageChatId, text));
             }
         } catch (Exception e) {
             log.warn("Ошибка при обработке обновления: {}", e.getMessage(), e);

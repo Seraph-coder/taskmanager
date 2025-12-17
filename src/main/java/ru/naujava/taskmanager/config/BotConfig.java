@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.naujava.taskmanager.bot.BotMessageProcessor;
 import ru.naujava.taskmanager.bot.KeyboardBuilder;
+import ru.naujava.taskmanager.bot.MessageRateLimiter;
 import ru.naujava.taskmanager.bot.TelegramBot;
 import ru.naujava.taskmanager.controller.CallbackHandler;
 import ru.naujava.taskmanager.state.StateMachine;
@@ -24,9 +25,11 @@ public class BotConfig {
      * Создание процессора сообщений.
      */
     @Bean
-    public BotMessageProcessor botMessageProcessor(StateMachine stateMachine, CallbackHandler callbackHandler,
-                                                   KeyboardBuilder keyboardBuilder) {
-        return new BotMessageProcessor(stateMachine, callbackHandler, keyboardBuilder);
+    public BotMessageProcessor botMessageProcessor(StateMachine stateMachine,
+                                                   CallbackHandler callbackHandler,
+                                                   KeyboardBuilder keyboardBuilder,
+                                                   MessageRateLimiter rateLimiter) {
+        return new BotMessageProcessor(stateMachine, callbackHandler, keyboardBuilder, rateLimiter);
     }
 
     /**
