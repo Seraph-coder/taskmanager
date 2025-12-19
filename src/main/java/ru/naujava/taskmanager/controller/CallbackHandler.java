@@ -39,7 +39,11 @@ public class CallbackHandler {
 
         return switch (callbackData) {
             case BotConstants.CALLBACK_LIST -> {
-                String text = taskService.formatTaskList(chatId);
+                String text = taskService.formatUncompletedTaskAsString(chatId);
+                yield new CommandResponse(text, Action.NONE, null, true);
+            }
+            case BotConstants.CALLBACK_SHOWDONE -> {
+                String text = taskService.formatCompletedTaskAsString(chatId);
                 yield new CommandResponse(text, Action.NONE, null, true);
             }
             case BotConstants.CALLBACK_ADD ->

@@ -10,26 +10,26 @@ import ru.naujava.taskmanager.entity.Task;
 import ru.naujava.taskmanager.service.TaskService;
 
 /**
- * Команда для удаления задачи по её номеру в списке.
+ * Команда для отметки задачи как выполненной по её номеру в списке.
  *
  * @author Seraph-coder
- * @since 02.11.2025
+ * @since 18.12.2025
  */
 @Component
-public class DeleteTaskCommand implements BotCommand {
-    private final Logger log = LoggerFactory.getLogger(DeleteTaskCommand.class);
+public class DoneCommand implements BotCommand {
+    private final Logger log = LoggerFactory.getLogger(DoneCommand.class);
     private final TaskService taskService;
 
     /**
-     * Конструктор удаления задачи.
+     * Конструктор команды отметки задачи как выполненной.
      */
-    public DeleteTaskCommand(TaskService taskService) {
+    public DoneCommand(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @Override
     public String getCommandName() {
-        return "/delete";
+        return "/done";
     }
 
     @Override
@@ -50,22 +50,20 @@ public class DeleteTaskCommand implements BotCommand {
                 throw new IllegalArgumentException("Номер задачи должен быть положительным числом");
             }
         } catch (NumberFormatException e) {
-            log.warn("Не удалось удалить задачу. Причина: номер задачи должен быть числом");
-            return new CommandResponse("Ошибка: номер задачи должен быть числом", Action.NONE,
-                    null, true);
+            log.warn("Не удалось отметить задачу как выполненную. Причина: номер задачи должен быть числом");
+            return new CommandResponse("Ошибка: номер задачи должен быть числом", Action.NONE, null, true);
         } catch (IllegalArgumentException e) {
-            log.warn("Не удалось удалить задачу. Причина: {}", e.getMessage());
-            return new CommandResponse("Ошибка: " + e.getMessage(),
-                    Action.NONE, null, true);
+            log.warn("Не удалось отметить задачу как выполненную. Причина: {}", e.getMessage());
+            return new CommandResponse("Ошибка: " + e.getMessage(), Action.NONE, null, true);
         }
 
         try {
-            Task deleted = taskService.deleteTaskByIndexAndTelegramId(taskIndex, chatId);
+            Task marked = taskService.markTaskCompletedByIndexAndTelegramId(taskIndex, chatId);
             return new CommandResponse(
-                    "Задача “" + deleted.getDescription() + "” удалена",
+                    "Задача “" + marked.getDescription() + "” отмечена как выполненная",
                     Action.NONE, null, true);
         } catch (IllegalArgumentException e) {
-            log.warn("Не удалось удалить задачу. Причина: {}", e.getMessage());
+            log.warn("Не удалось отметить задачу как выполненную. Причина: {}", e.getMessage());
             return new CommandResponse(e.getMessage(), Action.NONE, null, true);
         }
     }

@@ -7,25 +7,25 @@ import ru.naujava.taskmanager.controller.CommandResponse;
 import ru.naujava.taskmanager.service.TaskService;
 
 /**
- * Команда для отображения списка невыполненных задач пользователя.
+ * Команда для отображения списка выполненных задач пользователя.
  *
  * @author Seraph-coder
- * @since 02.11.2025
+ * @since 18.12.2025
  */
 @Component
-public class TodoListCommand implements BotCommand {
+public class ShowDoneCommand implements BotCommand {
     private final TaskService taskService;
 
     /**
-     * Конструктор отображения списка задач.
+     * Конструктор команды показа выполненных задач.
      */
-    public TodoListCommand(TaskService taskService) {
+    public ShowDoneCommand(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @Override
     public String getCommandName() {
-        return "/todo";
+        return "/showdone";
     }
 
     @Override
@@ -35,7 +35,7 @@ public class TodoListCommand implements BotCommand {
                     BotConstants.MSG_UNKNOWN_USER,
                     Action.NONE, null, true);
         }
-        String taskList = taskService.formatUncompletedTaskAsString(chatId);
+        String taskList = taskService.formatCompletedTaskAsString(chatId);
         return new CommandResponse(taskList, Action.NONE, null, true);
     }
 }

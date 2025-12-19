@@ -131,7 +131,7 @@ public class StateHandlersIntegrationTest {
         StateTransition response = stateMachine.processMessage(chatId, "1");
 
         Assertions.assertTrue(response.shouldSendMenu());
-        Assertions.assertEquals("Задача с номером 1 не найдена", response.responseText());
+        Assertions.assertEquals("Ошибка: Задача 1 не найдена", response.responseText());
     }
 
     /**

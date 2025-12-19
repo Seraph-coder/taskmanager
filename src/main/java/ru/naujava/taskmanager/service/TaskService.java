@@ -42,6 +42,24 @@ public class TaskService {
     }
 
     /**
+     * Находит все выполненные задачи пользователя по его Telegram ID и возвращает их в отсортированном по ID порядке.
+     */
+    public List<Task> getCompletedTasks(Long telegramId) {
+        Objects.requireNonNull(telegramId, "telegramId не должен быть null");
+        return taskRepository.findByUser_TelegramIdAndDoneTrueOrderByIdAsc(telegramId);
+    }
+
+    /**
+     * Находит все невыполненные задачи пользователя по его Telegram ID
+     * и возвращает их в отсортированном по ID порядке.
+     */
+    public List<Task> getUncompletedTasks(Long telegramId) {
+        Objects.requireNonNull(telegramId, "telegramId не должен быть null");
+        return taskRepository.findByUser_TelegramIdAndDoneFalseOrderByIdAsc(telegramId);
+    }
+
+
+    /**
      * Создает задачу, связывая её с пользователем по Telegram ID.
      *
      * @throws IllegalArgumentException если задача с таким описанием уже существует
@@ -87,7 +105,7 @@ public class TaskService {
     }
 
     /**
-     * Удаляет задачу по её номеру в списке задач пользователя.
+     * Удаляет задачу по её номеру в списке невыполненных задач пользователя.
      *
      * @throws IllegalArgumentException если задача не найдена или индекс некорректен
      */
@@ -97,22 +115,38 @@ public class TaskService {
             throw new IllegalArgumentException("Номер задачи должен быть положительным");
         }
 
-        List<Task> tasks = findAllTasksByTelegramId(telegramId);
+        List<Task> tasks = getUncompletedTasks(telegramId);
         if (taskIndex > tasks.size()) {
-            throw new IllegalArgumentException("Задача с номером " + taskIndex + " не найдена");
+            throw new IllegalArgumentException("Ошибка: Задача " + taskIndex + " не найдена");
         }
 
         Task toDelete = tasks.get(taskIndex - 1);
         taskRepository.delete(toDelete);
-        log.info("Удалена задача '{}' (индекс {}) для пользователя с telegramId: {}", toDelete.getDescription(), taskIndex, telegramId);
+        log.info("Удалена задача '{}' (индекс {}) для пользователя с telegramId: {}",
+                toDelete.getDescription(), taskIndex, telegramId);
         return toDelete;
     }
 
     /**
-     * Возвращает отформатированный список задач пользователя.
+     * Возвращает отформатированный список невыполненных задач пользователя.
      */
-    public String formatTaskList(Long telegramId) {
-        List<Task> tasks = findAllTasksByTelegramId(telegramId);
+    public String formatUncompletedTaskAsString(Long telegramId) {
+        List<Task> tasks = getUncompletedTasks(telegramId);
+        return formatTaskList(tasks);
+    }
+
+    /**
+     * Возвращает отформатированный список выполненных задач пользователя.
+     */
+    public String formatCompletedTaskAsString(Long telegramId) {
+        List<Task> tasks = getCompletedTasks(telegramId);
+        return formatTaskList(tasks);
+    }
+
+    /**
+     * Форматирует список задач в строку с нумерацией.
+     */
+    private String formatTaskList(List<Task> tasks) {
         if (tasks.isEmpty()) {
             return BotConstants.MSG_TASKS_EMPTY;
         }
@@ -125,5 +159,29 @@ public class TaskService {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Помечает задачу как выполненную по её номеру в списке невыполненных задач пользователя.
+     *
+     * @throws IllegalArgumentException если задача не найдена или индекс некорректен
+     */
+    public Task markTaskCompletedByIndexAndTelegramId(int taskIndex, Long telegramId) {
+        Objects.requireNonNull(telegramId, "telegramId не должен быть null");
+        if (taskIndex < 1) {
+            throw new IllegalArgumentException("Номер задачи должен быть положительным");
+        }
+
+        List<Task> tasks = getUncompletedTasks(telegramId);
+        if (taskIndex > tasks.size()) {
+            throw new IllegalArgumentException("Задача с номером " + taskIndex + " не найдена");
+        }
+
+        Task toCompleted = tasks.get(taskIndex - 1);
+        toCompleted.setDone(true);
+        taskRepository.save(toCompleted);
+        log.info("Помечена как выполненная задача '{}' (индекс {}) для пользователя с telegramId: {}",
+                toCompleted.getDescription(), taskIndex, telegramId);
+        return toCompleted;
     }
 }

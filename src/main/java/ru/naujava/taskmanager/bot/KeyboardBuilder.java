@@ -25,12 +25,16 @@ public class KeyboardBuilder {
                 .text(BotConstants.BUTTON_DELETE_TASK).callbackData(BotConstants.CALLBACK_DELETE).build();
         InlineKeyboardButton list = InlineKeyboardButton.builder()
                 .text(BotConstants.BUTTON_LIST_TASKS).callbackData(BotConstants.CALLBACK_LIST).build();
+        InlineKeyboardButton showDone = InlineKeyboardButton.builder()
+                .text(BotConstants.BUTTON_SHOW_COMPLETED).callbackData(BotConstants.CALLBACK_SHOWDONE).build();
 
-        InlineKeyboardRow row = new InlineKeyboardRow();
-        row.add(add);
-        row.add(del);
-        row.add(list);
-        return new InlineKeyboardMarkup(List.of(row));
+        InlineKeyboardRow row1 = new InlineKeyboardRow();
+        row1.add(add);
+        row1.add(del);
+        InlineKeyboardRow row2 = new InlineKeyboardRow();
+        row2.add(list);
+        row2.add(showDone);
+        return new InlineKeyboardMarkup(List.of(row1, row2));
     }
 
     /**

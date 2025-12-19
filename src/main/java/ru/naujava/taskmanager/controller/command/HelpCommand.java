@@ -24,6 +24,8 @@ public class HelpCommand implements BotCommand {
                 /add [описание] – добавить задачу
                 /todo – показать список задач
                 /delete [номер] – удалить задачу
+                /done [номер] – отметить задачу как выполненную
+                /showdone – показать выполненные задачи
                 /help – справка по командам
                 """, Action.NONE, null, true);
     }

@@ -25,6 +25,12 @@ public class Task {
     private String description;
 
     /**
+     * Статус выполнения задачи.
+     */
+    @Column(nullable = false)
+    private boolean done = false;
+
+    /**
      * Пользователь, которому принадлежит задача.
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,6 +59,14 @@ public class Task {
 
     public void setDescription(String title) {
         this.description = title;
+    }
+
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
     }
 
     public User getUser() {

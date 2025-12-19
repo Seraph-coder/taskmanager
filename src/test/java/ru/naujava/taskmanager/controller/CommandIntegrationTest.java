@@ -93,14 +93,14 @@ public class CommandIntegrationTest {
 
         stateMachine.processMessage(chatId, "/add Прочитать книгу");
         StateTransition responseDeleteInvalid = stateMachine.processMessage(chatId, "/delete 2");
-        Assertions.assertEquals("Ошибка: задача 2 не найдена", responseDeleteInvalid.responseText());
+        Assertions.assertEquals("Ошибка: Задача 2 не найдена", responseDeleteInvalid.responseText());
         StateTransition responseDeleteNegative = stateMachine.processMessage(chatId, "/delete -1");
         Assertions.assertEquals(
-                "Ошибка: номер задачи должен быть положительным числом",
+                "Ошибка: Номер задачи должен быть положительным числом",
                 responseDeleteNegative.responseText());
         StateTransition responseDeleteZero = stateMachine.processMessage(chatId, "/delete 0");
         Assertions.assertEquals(
-                "Ошибка: номер задачи должен быть положительным числом",
+                "Ошибка: Номер задачи должен быть положительным числом",
                 responseDeleteZero.responseText());
         StateTransition responseTodo = stateMachine.processMessage(chatId, "/todo");
         Assertions.assertEquals(
