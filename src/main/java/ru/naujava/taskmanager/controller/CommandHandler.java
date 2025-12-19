@@ -69,8 +69,7 @@ public class CommandHandler implements MessageHandler, StateHandler {
             newState = UserState.DEFAULT;
         }
 
-        Action action = response.shouldSendMenu() ? Action.SEND_MENU : Action.NONE;
         return new StateTransition(response.text(), newState, response.keyboard(),
-                action, response.shouldSendMenu());
+                Action.NONE, true);
     }
 }

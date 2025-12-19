@@ -26,16 +26,6 @@ public enum Action {
         }
     },
     /**
-     * Отправить меню.
-     */
-    SEND_MENU {
-        @Override
-        public void handle(StateMachine stateMachine, KeyboardBuilder keyboardBuilder,
-                           List<BotResponse> responses, CommandResponse response, Long chatId) {
-            // Уже обработано
-        }
-    },
-    /**
      * Отменить добавление задачи.
      */
     CANCEL_ADD_TASK {

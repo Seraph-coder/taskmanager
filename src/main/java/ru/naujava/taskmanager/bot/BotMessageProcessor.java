@@ -56,7 +56,8 @@ public class BotMessageProcessor {
                 String text = update.getMessage().getText();
                 if (rateLimiter.isRateLimited(messageChatId)) {
                     log.warn("Rate limit exceeded for chatId: {}", messageChatId);
-                    return List.of(new BotResponse(messageChatId, "Слишком много сообщений. Подождите минуту.", null, Action.NONE));
+                    return List.of(new BotResponse(messageChatId,
+                            "Слишком много сообщений. Подождите минуту.", null, Action.NONE));
                 }
                 log.info("Обработка текстового сообщения от chatId: {}", messageChatId);
                 responses.addAll(processTextMessage(messageChatId, text));
