@@ -13,12 +13,14 @@ public final class BotConstants {
     public static final String CALLBACK_ADD = "ADD";
     public static final String CALLBACK_DELETE = "DELETE";
     public static final String CALLBACK_LIST = "LIST";
+    public static final String CALLBACK_SHOWDONE = "SHOWDONE";
     public static final String CALLBACK_CANCEL = "CANCEL";
 
     // Текст кнопок
     public static final String BUTTON_ADD_TASK = "Добавить задачу";
     public static final String BUTTON_DELETE_TASK = "Удалить задачу";
     public static final String BUTTON_LIST_TASKS = "Список задач";
+    public static final String BUTTON_SHOW_COMPLETED = "Выполненные задачи";
     public static final String BUTTON_CANCEL = "Отменить";
 
     // Сообщения
