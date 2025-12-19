@@ -16,6 +16,9 @@ import ru.naujava.taskmanager.service.TaskService;
 public class ShowDoneCommand implements BotCommand {
     private final TaskService taskService;
 
+    /**
+     * Конструктор команды показа выполненных задач.
+     */
     public ShowDoneCommand(TaskService taskService) {
         this.taskService = taskService;
     }
@@ -34,4 +37,3 @@ public class ShowDoneCommand implements BotCommand {
         return new CommandResponse(taskList, null, KeyboardType.MAIN_MENU);
     }
 }
-
