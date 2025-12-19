@@ -175,7 +175,7 @@ public class TaskServiceIntegrationTest {
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.deleteTaskByIndexAndTelegramId(5, user.getTelegramId()));
-        Assertions.assertEquals("Задача с номером 5 не найдена", ex.getMessage());
+        Assertions.assertEquals("Ошибка: Задача 5 не найдена", ex.getMessage());
 
         IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.deleteTaskByIndexAndTelegramId(0, user.getTelegramId()));
@@ -195,13 +195,103 @@ public class TaskServiceIntegrationTest {
     public void formatTaskList() {
         User user = new User(2001L);
 
-        String result = taskService.formatTaskList(user.getTelegramId());
+        String result = taskService.formatUncompletedTaskAsString(user.getTelegramId());
         Assertions.assertEquals("Список задач пуст", result);
 
         taskService.createTask("Задача 1", user.getTelegramId());
         taskService.createTask("Задача 2", user.getTelegramId());
 
-        result = taskService.formatTaskList(user.getTelegramId());
+        result = taskService.formatUncompletedTaskAsString(user.getTelegramId());
         Assertions.assertEquals("1) Задача 1\n2) Задача 2", result);
+    }
+
+    /**
+     * Тест пометки задачи как выполненной. И ее удаление из списка невыполненных задач,
+     * а также проверка, что она появляется в списке выполненных задач.
+     * <br>
+     * Ожидаемое поведение: задача помечается как выполненная.
+     */
+    @Test
+    public void markTaskAsCompleted() {
+        User user = new User(3001L);
+
+        taskService.createTask("Какая-то задача", user.getTelegramId());
+        Task task1 = taskService.createTask("Задача для выполнения", user.getTelegramId());
+        taskService.createTask("Другая задача", user.getTelegramId());
+        Task marked = taskService.markTaskCompletedByIndexAndTelegramId(2, user.getTelegramId());
+
+        Assertions.assertEquals(task1.getId(), marked.getId());
+        Assertions.assertTrue(marked.isDone());
+
+        List<Task> uncompleted = taskService.getUncompletedTasks(user.getTelegramId());
+        Assertions.assertEquals(2, uncompleted.size());
+        Assertions.assertTrue(uncompleted.stream()
+                .map(Task::getDescription)
+                .toList()
+                .containsAll(List.of("Какая-то задача", "Другая задача")));
+
+        List<Task> completed = taskService.getCompletedTasks(user.getTelegramId());
+        Assertions.assertEquals(1, completed.size());
+        Assertions.assertEquals("Задача для выполнения", completed.getFirst().getDescription());
+    }
+
+    /**
+     * Тест получения списка выполненных задач.
+     * <br>
+     * Ожидаемое поведение: возвращает только выполненные задачи.
+     */
+    @Test
+    public void getCompletedTasks() {
+        User user = new User(4001L);
+
+        taskService.createTask("Невыполненная задача", user.getTelegramId());
+        taskService.createTask("Выполненная задача", user.getTelegramId());
+        taskService.markTaskCompletedByIndexAndTelegramId(2, user.getTelegramId());
+
+        List<Task> completed = taskService.getCompletedTasks(user.getTelegramId());
+        Assertions.assertEquals(1, completed.size());
+        Assertions.assertEquals("Выполненная задача", completed.getFirst().getDescription());
+        Assertions.assertTrue(completed.getFirst().isDone());
+    }
+
+    /**
+     * Тест форматирования списка выполненных задач.
+     * <br>
+     * Ожидаемое поведение: возвращает отформатированную строку с выполненными задачами или сообщение о пустом списке.
+     */
+    @Test
+    public void formatCompletedTaskList() {
+        User user = new User(5001L);
+
+        String result = taskService.formatCompletedTaskAsString(user.getTelegramId());
+        Assertions.assertEquals("Список задач пуст", result);
+
+        taskService.createTask("Задача 1", user.getTelegramId());
+        taskService.createTask("Задача 2", user.getTelegramId());
+        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
+        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
+
+        result = taskService.formatCompletedTaskAsString(user.getTelegramId());
+        Assertions.assertEquals("1) Задача 1\n2) Задача 2", result);
+    }
+
+    /**
+     * Попытка отметить задачу как выполненную с некорректным индексом.
+     * <br>
+     * Ожидаемое поведение: выбрасывается IllegalArgumentException.
+     */
+    @Test
+    public void markTaskCompletedByInvalidIndexThrowsException() {
+        User user = new User(6001L);
+
+        taskService.createTask("Задача 1", user.getTelegramId());
+
+        IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                taskService.markTaskCompletedByIndexAndTelegramId(5, user.getTelegramId()));
+        Assertions.assertEquals("Задача с номером 5 не найдена", ex.getMessage());
+
+        IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                taskService.markTaskCompletedByIndexAndTelegramId(0, user.getTelegramId()));
+        Assertions.assertEquals("Номер задачи должен быть положительным", ex2.getMessage());
     }
 }

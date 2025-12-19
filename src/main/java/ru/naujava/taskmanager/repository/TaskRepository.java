@@ -27,4 +27,14 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
      * Проверяет, существует ли задача с таким описанием у указанного пользователя.
      */
     boolean existsByUser_TelegramIdAndDescription(Long telegramId, String description);
+
+    /**
+     * Находит все невыполненные задачи пользователя и сортирует их по id по возрастанию.
+     */
+    List<Task> findByUser_TelegramIdAndDoneFalseOrderByIdAsc(Long telegramId);
+
+    /**
+     * Находит все выполненные задачи пользователя и сортирует их по id по возрастанию.
+     */
+    List<Task> findByUser_TelegramIdAndDoneTrueOrderByIdAsc(Long telegramId);
 }
