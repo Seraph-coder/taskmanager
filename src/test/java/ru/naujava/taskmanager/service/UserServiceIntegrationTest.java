@@ -61,5 +61,6 @@ public class UserServiceIntegrationTest {
     @Test
     public void findByTelegramIdWithInvalidIdReturnsEmpty() {
         Assertions.assertTrue(userService.findByTelegramId(-1L).isEmpty());
+        Assertions.assertTrue(userService.findByTelegramId(null).isEmpty());
     }
 }

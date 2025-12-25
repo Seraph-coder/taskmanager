@@ -1,6 +1,6 @@
 package ru.naujava.taskmanager.controller;
 
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import ru.naujava.taskmanager.bot.dto.KeyboardType;
 import ru.naujava.taskmanager.entity.UserState;
 
 /**
@@ -10,19 +10,11 @@ import ru.naujava.taskmanager.entity.UserState;
  * @since 11.12.2025
  */
 public record CommandResponse(String text, Action action, UserState newState,
-                              boolean shouldSendMenu, InlineKeyboardMarkup keyboard) {
+                              KeyboardType keyboardType) {
     /**
      * Конструктор без клавиатуры и отправки меню.
      */
     public CommandResponse(String text, Action action, UserState newState) {
-        this(text, action, newState, false, null);
-    }
-
-    /**
-     * Конструктор без клавиатуры.
-     */
-    public CommandResponse(String text, Action action,
-                           UserState newState, boolean shouldSendMenu) {
-        this(text, action, newState, shouldSendMenu, null);
+        this(text, action, newState, KeyboardType.NONE);
     }
 }

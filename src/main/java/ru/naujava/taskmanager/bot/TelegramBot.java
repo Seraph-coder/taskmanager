@@ -7,7 +7,9 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -31,7 +33,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
     /**
      * Конструктор телеграм-бота.
      */
-    public TelegramBot(String botToken, BotMessageProcessor messageProcessor) {
+    public TelegramBot(BotMessageProcessor messageProcessor, String botToken) {
         this.botToken = botToken;
         this.messageProcessor = messageProcessor;
         if (botToken == null || botToken.isBlank()) {
@@ -45,15 +47,24 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
      * Обрабатывает входящие обновления от Telegram.
      */
     @Override
-    public void consume(List<Update> list) {
-        for (Update update : list) {
+    public void consume(List<Update> updates) {
+        for (Update update : updates) {
             try {
-                List<BotResponse> responses = messageProcessor.processUpdate(update);
+                List<BotResponse> responses;
+                if (update.hasCallbackQuery()) {
+                    CallbackQuery callback = update.getCallbackQuery();
+                    responses = messageProcessor.processCallback(
+                            callback.getMessage().getChatId(), callback.getData());
+                    answerCallback(callback.getId());
+                } else if (update.hasMessage() && update.getMessage().hasText()) {
+                    Message message = update.getMessage();
+                    responses = messageProcessor.processTextMessage(message.getChatId(), message.getText());
+                } else {
+                    continue;
+                }
+
                 for (BotResponse response : responses) {
                     sendMessage(response);
-                }
-                if (update.hasCallbackQuery()) {
-                    answerCallback(update.getCallbackQuery().getId());
                 }
             } catch (Exception e) {
                 log.warn("Ошибка при обработке обновления: {}", e.getMessage(), e);

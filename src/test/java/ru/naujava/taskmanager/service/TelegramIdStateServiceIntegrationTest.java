@@ -7,106 +7,108 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.entity.UserState;
-import ru.naujava.taskmanager.repository.TelegramIdStateRepository;
 
 /**
- * Тесты для сервиса управления состояниями пользователей {@link TelegramIdStateService}.
+ * Интеграционные тесты для {@link TelegramIdStateService}.
+ * <p>
+ * Эти тесты проверяют корректность работы с состояниями пользователей,
+ * включая создание, получение и изменение состояний.
+ * </p>
  *
  * @author Seraph-coder
- * @since 26.11.2025
+ * @since 25.12.2025
  */
 @SpringBootTest
+@Transactional
 @ActiveProfiles("test")
-public class TelegramIdStateServiceIntegrationTest {
-    @Autowired
-    private TelegramIdStateRepository telegramIdStateRepository;
+class TelegramIdStateServiceIntegrationTest {
 
     @Autowired
-    private TelegramIdStateService telegramIdStateService;
+    private TelegramIdStateService stateService;
 
     @Autowired
     private UserService userService;
 
+    private static final long CHAT_ID = 123L;
+    private static final long NON_EXISTENT_CHAT_ID = 999L;
+
     /**
-     * Тест создания нового состояния пользователя, которого еще нет в репозитории.
-     * <br>
-     * Ожидаемое поведение: создается новое состояние пользователя со значением DEFAULT.
+     * Проверяет, что при первом обращении пользователя создается и пользователь, и его состояние.
      */
     @Test
-    @Transactional
-    public void getUserStateCreatesNewIfNotExists() {
-        userService.getOrCreateByTelegramId(1300L);
-        UserState state = telegramIdStateService.getOrCreateUserState(1300L);
+    void getOrCreateUserState_createsUserAndState_whenUserDoesNotExist() {
+        UserState state = stateService.getOrCreateUserState(CHAT_ID);
+
         Assertions.assertEquals(UserState.DEFAULT, state);
-        Assertions.assertTrue(telegramIdStateRepository.existsById(1300L));
+        Assertions.assertTrue(userService.findByTelegramId(CHAT_ID).isPresent());
     }
 
     /**
-     * Тест получения состояния пользователя с null и некорректным telegramId.
-     * <br>
-     * Ожидаемое поведение: выбрасывается NullPointerException и IllegalArgumentException соответственно.
+     * Проверяет, что при повторном обращении возвращается существующее состояние.
      */
     @Test
-    public void getUserStateNullTelegramId() {
-        NullPointerException ex = Assertions.assertThrows(NullPointerException.class, () ->
-                telegramIdStateService.getOrCreateUserState(null)
-        );
-        Assertions.assertEquals("telegramId не может быть null", ex.getMessage());
+    void getOrCreateUserState_returnsExistingState_whenUserExists() {
+        stateService.getOrCreateUserState(CHAT_ID);
+        stateService.changeUserState(CHAT_ID, UserState.AWAITING_TASK_DESCRIPTION);
 
-        IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                telegramIdStateService.getOrCreateUserState(999999L)
-        );
-        Assertions.assertEquals(
-                "Пользователя с таким telegramId не существует: 999999", ex2.getMessage());
-    }
+        UserState state = stateService.getOrCreateUserState(CHAT_ID);
 
-    /**
-     * Тест успешного изменения состояния пользователя.
-     * <br>
-     * Ожидаемое поведение: состояние пользователя обновляется в репозитории.
-     */
-    @Test
-    public void changeUserStateSuccess() {
-        userService.getOrCreateByTelegramId(1400L);
-        telegramIdStateService.changeUserState(1400L, UserState.AWAITING_TASK_DESCRIPTION);
-        UserState state = telegramIdStateService.getOrCreateUserState(1400L);
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, state);
     }
 
     /**
-     * Тест попытки изменения состояния пользователя, который не существует.
-     * <br>
-     * Ожидаемое поведение: выбрасывается IllegalArgumentException.
+     * Проверяет, что при передаче null telegramId выбрасывается исключение.
      */
     @Test
-    public void changeUserStateUserNotFound() {
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                telegramIdStateService.changeUserState(999998L, UserState.AWAITING_TASK_DESCRIPTION)
-        );
+    void getOrCreateUserState_throwsException_whenTelegramIdIsNull() {
+        NullPointerException exception = Assertions.assertThrows(NullPointerException.class, ()
+                -> stateService.getOrCreateUserState(null));
+        Assertions.assertEquals("telegramId не может быть null", exception.getMessage());
     }
 
     /**
-     * Тест изменения состояния пользователя с null telegramId.
-     * <br>
-     * Ожидаемое поведение: выбрасывается NullPointerException.
+     * Проверяет успешное изменение состояния существующего пользователя.
      */
     @Test
-    public void changeUserStateNullTelegramId() {
-        Assertions.assertThrows(NullPointerException.class, () ->
-                telegramIdStateService.changeUserState(null, UserState.AWAITING_TASK_DESCRIPTION)
-        );
+    void changeUserState_updatesState_whenUserExists() {
+        stateService.getOrCreateUserState(CHAT_ID);
+
+        stateService.changeUserState(CHAT_ID, UserState.AWAITING_TASK_DESCRIPTION);
+
+        Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, stateService.getOrCreateUserState(CHAT_ID));
     }
 
     /**
-     * Тест изменения состояния пользователя с null новым состоянием.
-     * <br>
-     * Ожидаемое поведение: выбрасывается NullPointerException.
+     * Проверяет, что при попытке изменить состояние несуществующего пользователя,
+     * пользователь и его состояние будут созданы.
      */
     @Test
-    public void changeUserStateNullNewState() {
-        userService.getOrCreateByTelegramId(1300L);
-        Assertions.assertThrows(NullPointerException.class, () ->
-                telegramIdStateService.changeUserState(1300L, null)
-        );
+    void changeUserState_createsAndUpdatesState_whenUserDoesNotExist() {
+        stateService.changeUserState(NON_EXISTENT_CHAT_ID, UserState.AWAITING_TASK_DESCRIPTION);
+        UserState state = stateService.getOrCreateUserState(NON_EXISTENT_CHAT_ID);
+        Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, state);
+        Assertions.assertTrue(userService.findByTelegramId(NON_EXISTENT_CHAT_ID).isPresent());
+    }
+
+    /**
+     * Проверяет, что при передаче null telegramId при изменении состояния выбрасывается исключение.
+     */
+    @Test
+    void changeUserState_throwsException_whenTelegramIdIsNull() {
+        var exception = Assertions.assertThrows(NullPointerException.class, () ->
+                stateService.changeUserState(null, UserState.DEFAULT));
+        Assertions.assertEquals("telegramId не может быть null", exception.getMessage());
+    }
+
+    /**
+     * Проверяет, что при передаче null состояния при изменении выбрасывается исключение.
+     */
+    @Test
+    void changeUserState_throwsException_whenStateIsNull() {
+        stateService.getOrCreateUserState(CHAT_ID);
+        NullPointerException exception = Assertions.assertThrows(NullPointerException.class, () ->
+                stateService.changeUserState(CHAT_ID, null));
+        Assertions.assertEquals("newState не может быть null", exception.getMessage());
     }
 }
+

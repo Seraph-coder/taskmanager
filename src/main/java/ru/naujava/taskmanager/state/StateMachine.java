@@ -2,7 +2,9 @@ package ru.naujava.taskmanager.state;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import ru.naujava.taskmanager.bot.BotConstants;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.service.TelegramIdStateService;
 
@@ -19,18 +21,18 @@ import java.util.*;
 public class StateMachine {
     private final TelegramIdStateService telegramIdStateService;
     private final Map<UserState, MessageHandler> handlers = new HashMap<>();
-    private final Map<UserState, Set<UserState>> allowedTransitions;
     private final Logger log = LoggerFactory.getLogger(StateMachine.class);
     private final MessageHandler defaultHandler;
+    private final MessageHandler callbackHandler;
 
     /**
      * Конструктор стейтмашины.
      */
     public StateMachine(TelegramIdStateService telegramIdStateService,
                         List<MessageHandler> stateHandlers,
-                        TransitionConfig transitionConfig) {
+                        @Qualifier("callbackHandler") MessageHandler callbackHandler) {
         this.telegramIdStateService = telegramIdStateService;
-        this.allowedTransitions = transitionConfig.getAllowedTransitions();
+        this.callbackHandler = callbackHandler;
         MessageHandler tempDefault = null;
         Set<UserState> seenStates = new HashSet<>();
         for (MessageHandler handler : stateHandlers) {
@@ -50,12 +52,6 @@ public class StateMachine {
         if (defaultHandler == null) {
             throw new IllegalStateException("No default handler found for UserState.DEFAULT");
         }
-
-        for (UserState state : allowedTransitions.keySet()) {
-            if (!handlers.containsKey(state)) {
-                throw new IllegalStateException("No handler found for state: " + state);
-            }
-        }
     }
 
     /**
@@ -65,60 +61,50 @@ public class StateMachine {
         Objects.requireNonNull(chatId, "chatId не может быть null");
         Objects.requireNonNull(text, "text не может быть null");
         try {
-            log.info("Обработка сообщения для chatId={}, текст: {}", chatId, text);
+            log.info("Обработка сообщения для chatId={}, текст: '{}'", chatId, text);
             UserState currentState = telegramIdStateService.getOrCreateUserState(chatId);
-            MessageHandler handler = handlers.getOrDefault(currentState, defaultHandler);
-            StateTransition transition = handler.handle(chatId, text);
-            log.info("Текущее состояние: {}, Новое состояние: {}", currentState, transition.newState());
-            if (transition.newState() != null && !transition.newState().equals(currentState)) {
-                Set<UserState> allowed = allowedTransitions.getOrDefault(currentState, Set.of());
-                if (allowed.contains(transition.newState())) {
-                    setState(chatId, transition.newState());
-                } else {
-                    log.warn("Недопустимый переход из {} в {} для chatId={}",
-                            currentState, transition.newState(), chatId);
-                    return new StateTransition("Недопустимый переход состояния", currentState);
-                }
+
+            MessageHandler handler;
+            if (isCallback(text)) {
+                handler = callbackHandler;
+            } else if (text.startsWith("/")) {
+                handler = defaultHandler; // CommandHandler
+            } else {
+                handler = handlers.getOrDefault(currentState, defaultHandler);
             }
+
+            StateTransition transition = handler.handle(chatId, text);
+
+            // Применяем новое состояние, если оно есть в переходе
+            if (transition.newState() != null && transition.newState() != currentState) {
+                log.info("Переход состояния для chatId={} из {} в {}", chatId, currentState, transition.newState());
+                setState(chatId, transition.newState());
+            }
+
             return transition;
-        } catch (IllegalArgumentException e) {
-            log.error("Ошибка при обработке сообщения для chatId={}: {}", chatId, e.getMessage(), e);
-            return new StateTransition("Ошибка обработки состояния", null);
-        } catch (IllegalStateException e) {
-            log.error("Ошибка изменения состояния для chatId={}: {}", chatId, e.getMessage(), e);
-            return new StateTransition("Ошибка изменения состояния", null);
+        } catch (Exception e) {
+            log.warn("Ошибка при обработке сообщения для chatId={}: {}", chatId, e.getMessage(), e);
+            return new StateTransition(
+                    "Произошла внутренняя ошибка. Попробуйте позже.", UserState.DEFAULT);
         }
     }
 
     /**
-     * Возвращает текущее состояние пользователя, если оно не DEFAULT.
-     * Иначе возвращает пустой Optional.
+     * Проверяет, является ли текст callback-запросом.
      */
-    public Optional<UserState> getState(Long chatId) {
-        Objects.requireNonNull(chatId, "chatId не может быть null");
-        try {
-            UserState state = telegramIdStateService.getOrCreateUserState(chatId);
-            return state == UserState.DEFAULT ? Optional.empty() : Optional.of(state);
-        } catch (IllegalArgumentException e) {
-            log.warn("Ошибка получения состояния для chatId={}: {}", chatId, e.getMessage(), e);
-            return Optional.empty();
-        }
+    private boolean isCallback(String text) {
+        return BotConstants.CALLBACK_ADD.equals(text) ||
+                BotConstants.CALLBACK_DELETE.equals(text) ||
+                BotConstants.CALLBACK_LIST.equals(text) ||
+                BotConstants.CALLBACK_CANCEL.equals(text);
     }
 
     /**
      * Устанавливает состояние пользователя.
      */
-    public void setState(Long chatId, UserState state) {
+    private void setState(Long chatId, UserState state) {
         Objects.requireNonNull(chatId, "chatId не может быть null");
         Objects.requireNonNull(state, "state не может быть null");
         telegramIdStateService.changeUserState(chatId, state);
-    }
-
-    /**
-     * Сбрасывает состояние пользователя к DEFAULT.
-     */
-    public void resetState(Long chatId) {
-        Objects.requireNonNull(chatId, "chatId не может быть null");
-        telegramIdStateService.changeUserState(chatId, UserState.DEFAULT);
     }
 }

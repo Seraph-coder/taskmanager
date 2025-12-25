@@ -1,18 +1,17 @@
 package ru.naujava.taskmanager.state;
 
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import ru.naujava.taskmanager.bot.dto.KeyboardType;
 import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.entity.UserState;
 
 /**
- * Представляет переход состояния после обработки сообщения.
- * Содержит текст ответа, новое состояние (если переход), клавиатуру и действие.
+ * Переход состояния с ответом, новым состоянием, типом клавиатуры и действием.
  *
  * @author Seraph-coder
- * @since 16.12.2025
+ * @since 23.12.2025
  */
 public record StateTransition(String responseText, UserState newState,
-                              InlineKeyboardMarkup keyboard, Action action, boolean shouldSendMenu) {
+                              KeyboardType keyboardType, Action action) {
 
     /**
      * Конструктор с проверками.
@@ -27,16 +26,16 @@ public record StateTransition(String responseText, UserState newState,
     }
 
     /**
-     * Конструктор без клавиатуры, действия и shouldSendMenu.
+     * Конструктор без клавиатуры и действия.
      */
     public StateTransition(String responseText, UserState newState) {
-        this(responseText, newState, null, Action.NONE, false);
+        this(responseText, newState, KeyboardType.NONE, Action.NONE);
     }
 
     /**
-     * Конструктор без клавиатуры и действия, с shouldSendMenu.
+     * Конструктор без действия.
      */
-    public StateTransition(String responseText, UserState newState, boolean shouldSendMenu) {
-        this(responseText, newState, null, Action.NONE, shouldSendMenu);
+    public StateTransition(String responseText, UserState newState, KeyboardType keyboardType) {
+        this(responseText, newState, keyboardType, Action.NONE);
     }
 }

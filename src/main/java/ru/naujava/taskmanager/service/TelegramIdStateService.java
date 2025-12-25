@@ -50,14 +50,13 @@ public class TelegramIdStateService {
      */
     private TelegramIdState getOrCreateUserStateEntity(Long telegramId) {
         Objects.requireNonNull(telegramId, "telegramId не может быть null");
-        if (userService.findByTelegramId(telegramId).isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Пользователя с таким telegramId не существует: " + telegramId);
-        }
+
         Optional<TelegramIdState> userStateOpt = telegramIdStateRepository.findById(telegramId);
         if (userStateOpt.isPresent()) {
             return userStateOpt.get();
         }
+
+        userService.getOrCreateByTelegramId(telegramId);
         TelegramIdState newUserState = new TelegramIdState();
         newUserState.setTelegramId(telegramId);
         telegramIdStateRepository.save(newUserState);
@@ -67,7 +66,6 @@ public class TelegramIdStateService {
 
     /**
      * Изменяет состояние пользователя с указанным telegramId.
-     * Если состояние не найдено, создает его.
      *
      * @throws IllegalArgumentException если telegramId или newState равны null, или пользователь не существует
      */

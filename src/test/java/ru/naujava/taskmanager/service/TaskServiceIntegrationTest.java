@@ -91,6 +91,11 @@ public class TaskServiceIntegrationTest {
     public void createTaskWithNullDescriptionOrTelegramId() {
         User user = new User(1L);
 
+        IllegalArgumentException ex0 = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                taskService.createTask("", user.getTelegramId())
+        );
+        Assertions.assertEquals("Описание задачи не может быть пустым", ex0.getMessage());
+
         NullPointerException ex = Assertions.assertThrows(NullPointerException.class, () ->
                 taskService.createTask(null, user.getTelegramId())
         );
@@ -175,6 +180,10 @@ public class TaskServiceIntegrationTest {
         IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.deleteTaskByIndexAndTelegramId(0, user.getTelegramId()));
         Assertions.assertEquals("Номер задачи должен быть положительным", ex2.getMessage());
+
+        IllegalArgumentException ex3 = Assertions.assertThrows(IllegalArgumentException.class, () ->
+                taskService.deleteTaskByIndexAndTelegramId(-1, user.getTelegramId()));
+        Assertions.assertEquals("Номер задачи должен быть положительным", ex3.getMessage());
     }
 
     /**

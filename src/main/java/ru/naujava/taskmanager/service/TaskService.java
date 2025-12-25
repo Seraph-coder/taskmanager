@@ -51,7 +51,7 @@ public class TaskService {
         Objects.requireNonNull(taskDescription, "taskDescription не должен быть null");
         Objects.requireNonNull(telegramId, "telegramId не должен быть null");
         if (taskDescription.isEmpty()) {
-            throw new IllegalArgumentException("taskDescription не должен быть пустым");
+            throw new IllegalArgumentException("Описание задачи не может быть пустым");
         }
 
         boolean exists = taskRepository.existsByUser_TelegramIdAndDescription(telegramId, taskDescription);

@@ -9,10 +9,7 @@ import ru.naujava.taskmanager.controller.Action;
  * @param chatId   ID чата
  * @param text     Текст сообщения
  * @param keyboard Клавиатура (может быть null)
- * @param action   Действие
- *
- * @author Seraph-coder
- * @since 16.12.2025
+ * @param action   Действие, которое должен выполнить бот (например, отправить документ)
  */
-public record BotResponse(Long chatId, String text, InlineKeyboardMarkup keyboard, Action action) {
+public record BotResponse(long chatId, String text, InlineKeyboardMarkup keyboard, Action action) {
 }

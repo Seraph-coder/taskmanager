@@ -46,14 +46,14 @@ public class MessageRateLimiterTest {
      */
     @Test
     public void testRateLimitResetAfterTime() throws InterruptedException {
-        rateLimiter = new MessageRateLimiter(2, 5);
+        rateLimiter = new MessageRateLimiter(2, 10);
         Long chatId = 3L;
 
         Assertions.assertFalse(rateLimiter.isRateLimited(chatId));
         Assertions.assertFalse(rateLimiter.isRateLimited(chatId));
         Assertions.assertTrue(rateLimiter.isRateLimited(chatId));
 
-        Thread.sleep(5);
+        Thread.sleep(11);
         Assertions.assertFalse(rateLimiter.isRateLimited(chatId));
     }
 

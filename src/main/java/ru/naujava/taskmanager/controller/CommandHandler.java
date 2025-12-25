@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.bot.dto.KeyboardType;
 import ru.naujava.taskmanager.controller.command.BotCommand;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.state.MessageHandler;
@@ -51,25 +52,23 @@ public class CommandHandler implements MessageHandler, StateHandler {
         }
 
         String trimmed = text.trim();
-        String[] parts = trimmed.split("\\s+", 2);
-        String cmd = parts[0].toLowerCase();
-        String args = parts.length > 1 ? parts[1] : "";
+        String cmd = trimmed.split("\\s+")[0].toLowerCase();
+
+        if ("/cancel".equalsIgnoreCase(cmd)) {
+            return new StateTransition(BotConstants.MSG_ACTION_CANCELLED,
+                    UserState.DEFAULT, KeyboardType.MAIN_MENU, Action.NONE);
+        }
 
         CommandResponse response = Optional.ofNullable(commands.get(cmd))
-                .map(c -> c.execute(args, chatId))
+                .map(c -> c.execute("", chatId))
                 .orElseGet(() -> {
                     log.warn("Неизвестная команда '{}' от пользователя {}", cmd, chatId);
                     return new CommandResponse(
                             BotConstants.MSG_UNKNOWN_COMMAND,
-                            null, null, true);
+                            Action.NONE, null, KeyboardType.MAIN_MENU);
                 });
 
-        UserState newState = response.newState();
-        if (response.action() == Action.RESET_STATE) {
-            newState = UserState.DEFAULT;
-        }
-
-        return new StateTransition(response.text(), newState, response.keyboard(),
-                Action.NONE, true);
+        return new StateTransition(response.text(), response.newState(), response.keyboardType(),
+                response.action());
     }
 }
