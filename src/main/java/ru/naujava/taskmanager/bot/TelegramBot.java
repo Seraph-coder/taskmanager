@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import ru.naujava.taskmanager.bot.keyboard.KeyboardFactory;
 
 import java.util.List;
 
@@ -28,14 +29,16 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
     private final String botToken;
     private final TelegramClient telegramClient;
     private final BotMessageProcessor messageProcessor;
+    private final KeyboardFactory keyboardFactory;
     private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
     /**
      * Конструктор телеграм-бота.
      */
-    public TelegramBot(BotMessageProcessor messageProcessor, String botToken) {
+    public TelegramBot(BotMessageProcessor messageProcessor, String botToken, KeyboardFactory keyboardFactory) {
         this.botToken = botToken;
         this.messageProcessor = messageProcessor;
+        this.keyboardFactory = keyboardFactory;
         if (botToken == null || botToken.isBlank()) {
             this.telegramClient = null;
         } else {
@@ -81,7 +84,7 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
                 .chatId(response.chatId())
                 .text(response.text());
         if (response.keyboard() != null) {
-            builder.replyMarkup(response.keyboard());
+            builder.replyMarkup(keyboardFactory.build(response.keyboard()));
         }
         executeSafe(builder.build());
     }

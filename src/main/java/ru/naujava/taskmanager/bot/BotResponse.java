@@ -1,6 +1,6 @@
 package ru.naujava.taskmanager.bot;
 
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import ru.naujava.taskmanager.bot.dto.Keyboard;
 import ru.naujava.taskmanager.controller.Action;
 
 /**
@@ -11,5 +11,5 @@ import ru.naujava.taskmanager.controller.Action;
  * @param keyboard Клавиатура (может быть null)
  * @param action   Действие, которое должен выполнить бот (например, отправить документ)
  */
-public record BotResponse(long chatId, String text, InlineKeyboardMarkup keyboard, Action action) {
+public record BotResponse(long chatId, String text, Keyboard keyboard, Action action) {
 }

@@ -13,6 +13,10 @@ import java.util.List;
 
 /**
  * Интеграционные тесты для {@link BotMessageProcessor}.
+ * <p>
+ * Косвенно тестируемые классы: StateMachine, KeyboardService, TelegramIdStateService,
+ * CommandHandler, CallbackHandler.
+ * </p>
  *
  * @author Seraph-coder
  * @since 23.12.2025

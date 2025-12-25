@@ -27,16 +27,15 @@ public class BotConfig {
     @Bean
     public BotMessageProcessor botMessageProcessor(StateMachine stateMachine,
                                                    KeyboardService keyboardService,
-                                                   MessageRateLimiter rateLimiter,
-                                                   KeyboardFactory keyboardFactory) {
-        return new BotMessageProcessor(stateMachine, keyboardService, rateLimiter, keyboardFactory);
+                                                   MessageRateLimiter rateLimiter) {
+        return new BotMessageProcessor(stateMachine, keyboardService, rateLimiter);
     }
 
     /**
      * Создание экземпляра TelegramBot.
      */
     @Bean
-    public TelegramBot telegramBot(BotMessageProcessor messageProcessor) {
-        return new TelegramBot(messageProcessor, botToken);
+    public TelegramBot telegramBot(BotMessageProcessor messageProcessor, KeyboardFactory keyboardFactory) {
+        return new TelegramBot(messageProcessor, botToken, keyboardFactory);
     }
 }
