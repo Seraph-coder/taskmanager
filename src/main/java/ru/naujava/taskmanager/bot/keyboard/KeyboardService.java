@@ -30,9 +30,18 @@ public class KeyboardService {
     public Keyboard buildMainMenu() {
         KeyboardButton add = new KeyboardButton(BotConstants.BUTTON_ADD_TASK, BotConstants.CALLBACK_ADD);
         KeyboardButton del = new KeyboardButton(BotConstants.BUTTON_DELETE_TASK, BotConstants.CALLBACK_DELETE);
+        KeyboardRow row1 = new KeyboardRow(List.of(add, del));
+
+        KeyboardButton done = new KeyboardButton(BotConstants.BUTTON_MARK_DONE, BotConstants.CALLBACK_DONE);
+        KeyboardRow row2 = new KeyboardRow(List.of(done));
+
         KeyboardButton list = new KeyboardButton(BotConstants.BUTTON_LIST_TASKS, BotConstants.CALLBACK_LIST);
-        KeyboardRow row = new KeyboardRow(List.of(add, del, list));
-        return new Keyboard(List.of(row));
+        KeyboardRow row3 = new KeyboardRow(List.of(list));
+
+        KeyboardButton showDone = new KeyboardButton(BotConstants.BUTTON_SHOW_COMPLETED, BotConstants.CALLBACK_SHOWDONE);
+        KeyboardRow row4 = new KeyboardRow(List.of(showDone));
+
+        return new Keyboard(List.of(row1, row2, row3, row4));
     }
 
     /**

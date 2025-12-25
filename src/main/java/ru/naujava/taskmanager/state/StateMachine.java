@@ -96,6 +96,8 @@ public class StateMachine {
         return BotConstants.CALLBACK_ADD.equals(text) ||
                 BotConstants.CALLBACK_DELETE.equals(text) ||
                 BotConstants.CALLBACK_LIST.equals(text) ||
+                BotConstants.CALLBACK_DONE.equals(text) ||
+                BotConstants.CALLBACK_SHOWDONE.equals(text) ||
                 BotConstants.CALLBACK_CANCEL.equals(text);
     }
 

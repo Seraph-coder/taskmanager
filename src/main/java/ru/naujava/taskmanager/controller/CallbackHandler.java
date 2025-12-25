@@ -46,16 +46,31 @@ public class CallbackHandler implements MessageHandler {
             case BotConstants.CALLBACK_ADD ->
                     new StateTransition(BotConstants.MSG_ENTER_TASK_DESCRIPTION, UserState.AWAITING_TASK_DESCRIPTION,
                             KeyboardType.CANCEL, Action.NONE);
-            case BotConstants.CALLBACK_DELETE -> {
-                String taskList = taskService.formatTaskList(chatId);
+            case BotConstants.CALLBACK_DONE -> {
+                String taskList = taskService.formatUncompletedTaskAsString(chatId);
                 if (BotConstants.MSG_TASKS_EMPTY.equals(taskList)) {
                     yield new StateTransition(taskList, UserState.DEFAULT,
                             KeyboardType.MAIN_MENU, Action.NONE);
                 } else {
                     yield new StateTransition("Ваши задачи:\n" + taskList
-                            + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER,
+                            + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER_COMPLETE,
+                            UserState.AWAITING_TASK_ID_FOR_COMPLETION, KeyboardType.CANCEL, Action.NONE);
+                }
+            }
+            case BotConstants.CALLBACK_DELETE -> {
+                String taskList = taskService.formatTaskListForDeletion(chatId);
+                if (BotConstants.MSG_TASKS_EMPTY.equals(taskList)) {
+                    yield new StateTransition(taskList, UserState.DEFAULT,
+                            KeyboardType.MAIN_MENU, Action.NONE);
+                } else {
+                    yield new StateTransition("Выберите задачу для удаления:\n" + taskList
+                            + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER_DELETE,
                             UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL, Action.NONE);
                 }
+            }
+            case BotConstants.CALLBACK_SHOWDONE -> {
+                String text = taskService.formatCompletedTaskAsString(chatId);
+                yield new StateTransition(text, null, KeyboardType.MAIN_MENU, Action.NONE);
             }
             case BotConstants.CALLBACK_CANCEL ->
                     new StateTransition(BotConstants.MSG_ACTION_CANCELLED, UserState.DEFAULT,

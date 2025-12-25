@@ -117,7 +117,7 @@ public class TaskService {
 
         List<Task> tasks = getUncompletedTasks(telegramId);
         if (taskIndex > tasks.size()) {
-            throw new IllegalArgumentException("Ошибка: Задача " + taskIndex + " не найдена");
+            throw new IllegalArgumentException("Ошибка: Задача с номером " + taskIndex + " не найдена");
         }
 
         Task toDelete = tasks.get(taskIndex - 1);
@@ -128,11 +128,99 @@ public class TaskService {
     }
 
     /**
+     * Удаляет задачу по её номеру из объединенного списка задач
+     * (сначала выполненные, потом невыполненные).
+     *
+     * @throws IllegalArgumentException если задача не найдена или индекс некорректен
+     */
+    public Task deleteTaskByIndexFromCombinedList(int taskIndex, Long telegramId) {
+        Objects.requireNonNull(telegramId, "telegramId не должен быть null");
+        if (taskIndex < 1) {
+            throw new IllegalArgumentException("Номер задачи должен быть положительным");
+        }
+
+        List<Task> completedTasks = getCompletedTasks(telegramId);
+        List<Task> uncompletedTasks = getUncompletedTasks(telegramId);
+        int totalSize = completedTasks.size() + uncompletedTasks.size();
+
+        if (taskIndex > totalSize) {
+            throw new IllegalArgumentException("Ошибка: Задача с номером " + taskIndex + " не найдена");
+        }
+
+        Task toDelete;
+        if (taskIndex <= completedTasks.size()) {
+            toDelete = completedTasks.get(taskIndex - 1);
+        } else {
+            toDelete = uncompletedTasks.get(taskIndex - completedTasks.size() - 1);
+        }
+
+        taskRepository.delete(toDelete);
+        log.info("Удалена задача '{}' (индекс {}) для пользователя с telegramId: {}",
+                toDelete.getDescription(), taskIndex, telegramId);
+        return toDelete;
+    }
+
+    /**
+     * Возвращает отформатированный список невыполненных задач пользователя.
+     * Используется для команды /todo.
+     */
+    public String formatTaskList(Long telegramId) {
+        List<Task> tasks = getUncompletedTasks(telegramId);
+        return formatTaskListInternal(tasks);
+    }
+
+    /**
+     * Возвращает отформатированный список задач для удаления:
+     * сначала выполненные, потом невыполненные.
+     * Показывает заголовки блоков только если есть задачи в них.
+     */
+    public String formatTaskListForDeletion(Long telegramId) {
+        List<Task> completedTasks = getCompletedTasks(telegramId);
+        List<Task> uncompletedTasks = getUncompletedTasks(telegramId);
+
+        if (completedTasks.isEmpty() && uncompletedTasks.isEmpty()) {
+            return BotConstants.MSG_TASKS_EMPTY;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int index = 1;
+
+        // Сначала выполненные (если есть)
+        if (!completedTasks.isEmpty()) {
+            sb.append("Выполненные задачи\n");
+            for (int i = 0; i < completedTasks.size(); i++) {
+                sb.append(index++).append(") ").append(completedTasks.get(i).getDescription()).append(" ✓");
+                if (i < completedTasks.size() - 1) {
+                    sb.append("\n");
+                }
+            }
+
+            // Добавляем пустую строку перед следующим блоком, если есть невыполненные
+            if (!uncompletedTasks.isEmpty()) {
+                sb.append("\n\n");
+            }
+        }
+
+        // Потом невыполненные (если есть)
+        if (!uncompletedTasks.isEmpty()) {
+            sb.append("Не выполненные задачи\n");
+            for (int i = 0; i < uncompletedTasks.size(); i++) {
+                sb.append(index++).append(") ").append(uncompletedTasks.get(i).getDescription());
+                if (i < uncompletedTasks.size() - 1) {
+                    sb.append("\n");
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * Возвращает отформатированный список невыполненных задач пользователя.
      */
     public String formatUncompletedTaskAsString(Long telegramId) {
         List<Task> tasks = getUncompletedTasks(telegramId);
-        return formatTaskList(tasks);
+        return formatTaskListInternal(tasks);
     }
 
     /**
@@ -140,13 +228,23 @@ public class TaskService {
      */
     public String formatCompletedTaskAsString(Long telegramId) {
         List<Task> tasks = getCompletedTasks(telegramId);
-        return formatTaskList(tasks);
+        if (tasks.isEmpty()) {
+            return BotConstants.MSG_TASKS_EMPTY;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < tasks.size(); i++) {
+            sb.append(i + 1).append(") ").append(tasks.get(i).getDescription()).append(" ✓");
+            if (i < tasks.size() - 1) {
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     /**
      * Форматирует список задач в строку с нумерацией.
      */
-    private String formatTaskList(List<Task> tasks) {
+    private String formatTaskListInternal(List<Task> tasks) {
         if (tasks.isEmpty()) {
             return BotConstants.MSG_TASKS_EMPTY;
         }

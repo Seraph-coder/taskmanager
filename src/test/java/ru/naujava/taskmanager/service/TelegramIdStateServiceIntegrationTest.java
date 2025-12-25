@@ -95,7 +95,7 @@ class TelegramIdStateServiceIntegrationTest {
      */
     @Test
     void changeUserState_throwsException_whenTelegramIdIsNull() {
-        var exception = Assertions.assertThrows(NullPointerException.class, () ->
+        NullPointerException exception = Assertions.assertThrows(NullPointerException.class, () ->
                 stateService.changeUserState(null, UserState.DEFAULT));
         Assertions.assertEquals("telegramId не может быть null", exception.getMessage());
     }

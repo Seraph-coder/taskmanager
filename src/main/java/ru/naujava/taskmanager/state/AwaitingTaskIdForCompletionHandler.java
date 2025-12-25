@@ -11,26 +11,26 @@ import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.service.TaskService;
 
 /**
- * Обработчик состояния AWAITING_TASK_ID_FOR_DELETION.
+ * Обработчик состояния AWAITING_TASK_ID_FOR_COMPLETION.
  *
  * @author Seraph-coder
- * @since 12.12.2025
+ * @since 25.12.2025
  */
 @Component
-public class AwaitingTaskIdForDeletionHandler implements MessageHandler, StateHandler {
+public class AwaitingTaskIdForCompletionHandler implements MessageHandler, StateHandler {
     private final TaskService taskService;
-    private final Logger log = LoggerFactory.getLogger(AwaitingTaskIdForDeletionHandler.class);
+    private final Logger log = LoggerFactory.getLogger(AwaitingTaskIdForCompletionHandler.class);
 
     /**
      * Конструктор.
      */
-    public AwaitingTaskIdForDeletionHandler(TaskService taskService) {
+    public AwaitingTaskIdForCompletionHandler(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @Override
     public UserState getState() {
-        return UserState.AWAITING_TASK_ID_FOR_DELETION;
+        return UserState.AWAITING_TASK_ID_FOR_COMPLETION;
     }
 
     @Override
@@ -41,18 +41,18 @@ public class AwaitingTaskIdForDeletionHandler implements MessageHandler, StateHa
         }
         try {
             int taskIndex = Integer.parseInt(text.trim());
-            Task toDelete = taskService.deleteTaskByIndexFromCombinedList(taskIndex, chatId);
+            Task completed = taskService.markTaskCompletedByIndexAndTelegramId(taskIndex, chatId);
             return new StateTransition(
-                    "Задача '" + toDelete.getDescription() +
-                            "' удалена", UserState.DEFAULT, KeyboardType.MAIN_MENU, Action.NONE);
+                    "Задача '" + completed.getDescription() +
+                            "' отмечена как выполненная", UserState.DEFAULT, KeyboardType.MAIN_MENU, Action.NONE);
         } catch (NumberFormatException e) {
             log.warn("Неверный номер задачи для chatId={}: {}", chatId, text, e);
             return new StateTransition("Неверный номер задачи. Попробуйте еще раз.",
-                    UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL);
+                    UserState.AWAITING_TASK_ID_FOR_COMPLETION, KeyboardType.CANCEL);
         } catch (IllegalArgumentException e) {
-            log.warn("Ошибка при удалении задачи для chatId={}: {}", chatId, e.getMessage(), e);
+            log.warn("Ошибка при отметке задачи как выполненной для chatId={}: {}", chatId, e.getMessage(), e);
             return new StateTransition(e.getMessage() + ". Попробуйте еще раз.",
-                    UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL);
+                    UserState.AWAITING_TASK_ID_FOR_COMPLETION, KeyboardType.CANCEL);
         }
     }
 }

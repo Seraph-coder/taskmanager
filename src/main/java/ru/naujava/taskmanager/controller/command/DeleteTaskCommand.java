@@ -6,6 +6,7 @@ import ru.naujava.taskmanager.bot.dto.KeyboardType;
 import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.controller.CommandResponse;
 import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.service.TaskService;
 
 
 /**
@@ -16,11 +17,13 @@ import ru.naujava.taskmanager.entity.UserState;
  */
 @Component
 public class DeleteTaskCommand implements BotCommand {
+    private final TaskService taskService;
 
     /**
      * Конструктор удаления задачи.
      */
-    public DeleteTaskCommand() {
+    public DeleteTaskCommand(TaskService taskService) {
+        this.taskService = taskService;
     }
 
     @Override
@@ -35,7 +38,16 @@ public class DeleteTaskCommand implements BotCommand {
                     BotConstants.MSG_UNKNOWN_USER,
                     Action.NONE, null, KeyboardType.NONE);
         }
-        return new CommandResponse(BotConstants.MSG_ENTER_TASK_NUMBER, Action.NONE,
-                UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL);
+
+        String taskList = taskService.formatTaskListForDeletion(chatId);
+        if (BotConstants.MSG_TASKS_EMPTY.equals(taskList)) {
+            return new CommandResponse(taskList, Action.NONE, UserState.DEFAULT, KeyboardType.MAIN_MENU);
+        }
+
+        return new CommandResponse(
+                "Выберите задачу для удаления:\n" + taskList + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER_DELETE,
+                Action.NONE,
+                UserState.AWAITING_TASK_ID_FOR_DELETION,
+                KeyboardType.CANCEL);
     }
 }

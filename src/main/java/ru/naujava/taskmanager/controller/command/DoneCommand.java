@@ -1,23 +1,21 @@
 package ru.naujava.taskmanager.controller.command;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.bot.dto.KeyboardType;
 import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.controller.CommandResponse;
-import ru.naujava.taskmanager.entity.Task;
+import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.service.TaskService;
 
 /**
- * Команда для отметки задачи как выполненной по её номеру в списке.
+ * Команда для перехода в режим отметки задачи как выполненной.
  *
  * @author Seraph-coder
  * @since 18.12.2025
  */
 @Component
 public class DoneCommand implements BotCommand {
-    private final Logger log = LoggerFactory.getLogger(DoneCommand.class);
     private final TaskService taskService;
 
     /**
@@ -33,38 +31,22 @@ public class DoneCommand implements BotCommand {
     }
 
     @Override
-    public CommandResponse execute(String taskId, Long chatId) {
+    public CommandResponse execute(String message, Long chatId) {
         if (chatId == null) {
             return new CommandResponse(
                     BotConstants.MSG_UNKNOWN_USER,
-                    Action.NONE, null, true);
+                    Action.NONE, null, KeyboardType.NONE);
         }
 
-        int taskIndex;
-        try {
-            if (taskId == null || taskId.isBlank()) {
-                throw new IllegalArgumentException("Номер задачи не указан");
-            }
-            taskIndex = Integer.parseInt(taskId.trim());
-            if (taskIndex <= 0) {
-                throw new IllegalArgumentException("Номер задачи должен быть положительным числом");
-            }
-        } catch (NumberFormatException e) {
-            log.warn("Не удалось отметить задачу как выполненную. Причина: номер задачи должен быть числом");
-            return new CommandResponse("Ошибка: номер задачи должен быть числом", Action.NONE, null, true);
-        } catch (IllegalArgumentException e) {
-            log.warn("Не удалось отметить задачу как выполненную. Причина: {}", e.getMessage());
-            return new CommandResponse("Ошибка: " + e.getMessage(), Action.NONE, null, true);
+        String taskList = taskService.formatUncompletedTaskAsString(chatId);
+        if (BotConstants.MSG_TASKS_EMPTY.equals(taskList)) {
+            return new CommandResponse(taskList, Action.NONE, UserState.DEFAULT, KeyboardType.MAIN_MENU);
         }
 
-        try {
-            Task marked = taskService.markTaskCompletedByIndexAndTelegramId(taskIndex, chatId);
-            return new CommandResponse(
-                    "Задача “" + marked.getDescription() + "” отмечена как выполненная",
-                    Action.NONE, null, true);
-        } catch (IllegalArgumentException e) {
-            log.warn("Не удалось отметить задачу как выполненную. Причина: {}", e.getMessage());
-            return new CommandResponse(e.getMessage(), Action.NONE, null, true);
-        }
+        return new CommandResponse(
+                "Ваши задачи:\n" + taskList + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER_COMPLETE,
+                Action.NONE,
+                UserState.AWAITING_TASK_ID_FOR_COMPLETION,
+                KeyboardType.CANCEL);
     }
 }
