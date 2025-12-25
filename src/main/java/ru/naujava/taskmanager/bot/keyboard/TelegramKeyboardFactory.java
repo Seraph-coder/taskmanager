@@ -23,13 +23,7 @@ import java.util.stream.Collectors;
  */
 @Component
 public class TelegramKeyboardFactory implements KeyboardFactory {
-
-    /**
-     * Собирает {@link InlineKeyboardMarkup} из нашего собственного {@link Keyboard}.
-     *
-     * @param keyboard Наша внутренняя модель клавиатуры.
-     * @return Готовая клавиатура для Telegram API.
-     */
+    @Override
     public InlineKeyboardMarkup build(Keyboard keyboard) {
         if (keyboard == null) {
             return null;
