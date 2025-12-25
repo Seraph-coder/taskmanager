@@ -18,5 +18,9 @@ public enum UserState {
     /**
      * Ожидание идентификатора задачи для удаления.
      */
-    AWAITING_TASK_ID_FOR_DELETION
+    AWAITING_TASK_ID_FOR_DELETION,
+    /**
+     * Ожидание идентификатора задачи для отметки как выполненной.
+     */
+    AWAITING_TASK_ID_FOR_COMPLETION
 }
