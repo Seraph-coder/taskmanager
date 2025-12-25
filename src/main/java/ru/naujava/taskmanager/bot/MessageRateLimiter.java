@@ -46,9 +46,7 @@ public class MessageRateLimiter {
             }
 
             if (times.size() >= maxMessagesPerMinute) {
-                if (times.isEmpty()) {
-                    userMessageTimes.remove(chatId, times);
-                }
+
                 return true;
             }
 
