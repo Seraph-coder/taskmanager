@@ -46,7 +46,7 @@ public class AwaitingTaskIdForDeletionHandler implements MessageHandler {
             Task toDelete = taskService.deleteTaskByIndexFromCombinedList(taskIndex, chatId);
             return new StateTransition(
                     "Задача '" + toDelete.getDescription() +
-                            "' удалена", UserState.DEFAULT, KeyboardType.MAIN_MENU);
+                            "' удалена", UserState.DEFAULT, KeyboardType.MAIN_MENU, Action.NONE);
         } catch (NumberFormatException e) {
             log.warn("Неверный номер задачи для chatId={}: {}", chatId, text, e);
             return new StateTransition("Неверный номер задачи. Попробуйте еще раз.",
