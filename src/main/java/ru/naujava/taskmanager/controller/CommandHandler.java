@@ -4,11 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
 import ru.naujava.taskmanager.controller.command.BotCommand;
 import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.state.MessageHandler;
-import ru.naujava.taskmanager.state.StateHandler;
 import ru.naujava.taskmanager.state.StateTransition;
 
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
  * @since 16.12.2025
  */
 @Component
-public class CommandHandler implements MessageHandler, StateHandler {
+public class CommandHandler implements MessageHandler {
     private final Map<String, BotCommand> commands;
     private final Logger log = LoggerFactory.getLogger(CommandHandler.class);
 
@@ -41,8 +40,8 @@ public class CommandHandler implements MessageHandler, StateHandler {
     }
 
     @Override
-    public UserState getState() {
-        return UserState.DEFAULT;
+    public Optional<UserState> getHandledState() {
+        return Optional.of(UserState.DEFAULT);
     }
 
     @Override
@@ -56,7 +55,7 @@ public class CommandHandler implements MessageHandler, StateHandler {
 
         if ("/cancel".equalsIgnoreCase(cmd)) {
             return new StateTransition(BotConstants.MSG_ACTION_CANCELLED,
-                    UserState.DEFAULT, KeyboardType.MAIN_MENU, Action.NONE);
+                    UserState.DEFAULT, KeyboardType.MAIN_MENU);
         }
 
         CommandResponse response = Optional.ofNullable(commands.get(cmd))
@@ -64,11 +63,9 @@ public class CommandHandler implements MessageHandler, StateHandler {
                 .orElseGet(() -> {
                     log.warn("Неизвестная команда '{}' от пользователя {}", cmd, chatId);
                     return new CommandResponse(
-                            BotConstants.MSG_UNKNOWN_COMMAND,
-                            Action.NONE, null, KeyboardType.MAIN_MENU);
+                            BotConstants.MSG_UNKNOWN_COMMAND, null, KeyboardType.MAIN_MENU);
                 });
 
-        return new StateTransition(response.text(), response.newState(), response.keyboardType(),
-                response.action());
+        return new StateTransition(response.text(), response.newState(), response.keyboardType());
     }
 }

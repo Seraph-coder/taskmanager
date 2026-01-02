@@ -2,10 +2,9 @@ package ru.naujava.taskmanager.controller.command;
 
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
-import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.controller.CommandResponse;
 import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
  * Команда для добавления новой задачи.
@@ -31,9 +30,9 @@ public class AddTaskCommand implements BotCommand {
     public CommandResponse execute(String description, Long chatId) {
         if (chatId == null) {
             return new CommandResponse(
-                    BotConstants.MSG_UNKNOWN_USER, Action.NONE, null, KeyboardType.NONE);
+                    BotConstants.MSG_UNKNOWN_USER, null, KeyboardType.NONE);
         }
-        return new CommandResponse(BotConstants.MSG_ENTER_TASK_DESCRIPTION, Action.NONE,
+        return new CommandResponse(BotConstants.MSG_ENTER_TASK_DESCRIPTION,
                 UserState.AWAITING_TASK_DESCRIPTION, KeyboardType.CANCEL);
     }
 }

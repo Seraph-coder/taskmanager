@@ -3,9 +3,8 @@ package ru.naujava.taskmanager.bot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.naujava.taskmanager.bot.dto.Keyboard;
-import ru.naujava.taskmanager.bot.keyboard.KeyboardService;
-import ru.naujava.taskmanager.controller.Action;
+import ru.naujava.taskmanager.keyboard.KeyboardProvider;
+import ru.naujava.taskmanager.keyboard.model.Keyboard;
 import ru.naujava.taskmanager.state.StateMachine;
 import ru.naujava.taskmanager.state.StateTransition;
 
@@ -22,7 +21,7 @@ import java.util.List;
 @Component
 public class BotMessageProcessor {
     private final StateMachine stateMachine;
-    private final KeyboardService keyboardService;
+    private final KeyboardProvider keyboardProvider;
     private final MessageRateLimiter rateLimiter;
     private final Logger log = LoggerFactory.getLogger(BotMessageProcessor.class);
 
@@ -30,10 +29,10 @@ public class BotMessageProcessor {
      * Конструктор процессора.
      */
     public BotMessageProcessor(StateMachine stateMachine,
-                               KeyboardService keyboardService,
+                               KeyboardProvider keyboardProvider,
                                MessageRateLimiter rateLimiter) {
         this.stateMachine = stateMachine;
-        this.keyboardService = keyboardService;
+        this.keyboardProvider = keyboardProvider;
         this.rateLimiter = rateLimiter;
     }
 
@@ -52,25 +51,20 @@ public class BotMessageProcessor {
         if (rateLimiter.isRateLimited(chatId)) {
             log.warn("Rate limit exceeded for chatId: {}", chatId);
             return List.of(new BotResponse(chatId,
-                    "Слишком много сообщений. Подождите минуту.", null, Action.NONE));
+                    "Слишком много сообщений. Подождите минуту.", null));
         }
         log.info("Обработка текстового сообщения от chatId: {}", chatId);
 
         List<BotResponse> responses = new ArrayList<>();
         try {
             StateTransition transition = stateMachine.processMessage(chatId, text);
-            Keyboard keyboard = switch (transition.keyboardType()) {
-                case MAIN_MENU -> keyboardService.buildMainMenu();
-                case CANCEL -> keyboardService.buildCancelKeyboard();
-                case NONE -> null;
-            };
-            responses.add(new BotResponse(chatId, transition.responseText(), keyboard,
-                    transition.action()));
+            Keyboard keyboard = keyboardProvider.getKeyboard(transition.keyboardType());
+            responses.add(new BotResponse(chatId, transition.responseText(), keyboard));
 
         } catch (Exception e) {
             log.warn("Ошибка при обработки сообщения для chatId={}: {}", chatId, e.getMessage(), e);
             responses.add(new BotResponse(chatId,
-                    "Произошла внутренняя ошибка. Попробуйте позже.", null, Action.NONE));
+                    "Произошла внутренняя ошибка. Попробуйте позже.", null));
         }
 
         return responses;

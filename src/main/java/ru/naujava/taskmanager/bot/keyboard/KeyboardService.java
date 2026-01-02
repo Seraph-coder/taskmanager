@@ -2,10 +2,10 @@ package ru.naujava.taskmanager.bot.keyboard;
 
 import org.springframework.stereotype.Service;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.Keyboard;
-import ru.naujava.taskmanager.bot.dto.KeyboardButton;
-import ru.naujava.taskmanager.bot.dto.KeyboardRow;
 import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.keyboard.model.Keyboard;
+import ru.naujava.taskmanager.keyboard.model.KeyboardButton;
+import ru.naujava.taskmanager.keyboard.model.KeyboardRow;
 
 import java.util.List;
 
@@ -21,7 +21,6 @@ import java.util.List;
  */
 @Service
 public class KeyboardService {
-
     /**
      * Возвращает клавиатуру для главного меню.
      *
@@ -46,4 +45,3 @@ public class KeyboardService {
         return new Keyboard(List.of(row));
     }
 }
-

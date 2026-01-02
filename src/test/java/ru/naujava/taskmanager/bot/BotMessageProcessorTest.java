@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.service.TelegramIdStateService;
 
@@ -45,9 +44,9 @@ class BotMessageProcessorTest {
         Assertions.assertEquals(1, responses.size());
         BotResponse response = responses.getFirst();
         Assertions.assertEquals(chatId, response.chatId());
-        Assertions.assertEquals("Добро пожаловать в Task Manager Bot! Введите /help для списка команд", response.text());
+        Assertions.assertEquals("Добро пожаловать в Task Manager Bot! Введите /help для списка команд",
+                response.text());
         Assertions.assertNotNull(response.keyboard());
-        Assertions.assertEquals(Action.NONE, response.action());
         Assertions.assertEquals(UserState.DEFAULT, telegramIdStateService.getOrCreateUserState(chatId));
     }
 
@@ -58,7 +57,6 @@ class BotMessageProcessorTest {
     @Test
     void processCallback_Add_Success() {
         long chatId = 1L;
-        // Эмулируем /start, чтобы создать пользователя
         botMessageProcessor.processTextMessage(chatId, "/start");
 
         List<BotResponse> responses = botMessageProcessor.processCallback(chatId, BotConstants.CALLBACK_ADD);
@@ -66,10 +64,10 @@ class BotMessageProcessorTest {
         Assertions.assertEquals(1, responses.size());
         BotResponse response = responses.getFirst();
         Assertions.assertEquals(chatId, response.chatId());
-        Assertions.assertEquals(BotConstants.MSG_ENTER_TASK_DESCRIPTION, response.text());
+        Assertions.assertEquals("Введите описание задачи", response.text());
         Assertions.assertNotNull(response.keyboard());
-        Assertions.assertEquals(Action.NONE, response.action());
-        Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, telegramIdStateService.getOrCreateUserState(chatId));
+        Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION,
+                telegramIdStateService.getOrCreateUserState(chatId));
     }
 
     /**
@@ -79,7 +77,7 @@ class BotMessageProcessorTest {
     void processTextMessage_UnknownCommand() {
         long chatId = 1L;
         String text = "/unknown";
-        botMessageProcessor.processTextMessage(chatId, "/start"); // Создаем пользователя
+        botMessageProcessor.processTextMessage(chatId, "/start");
 
         List<BotResponse> responses = botMessageProcessor.processTextMessage(chatId, text);
 
@@ -87,8 +85,7 @@ class BotMessageProcessorTest {
         BotResponse response = responses.getFirst();
         Assertions.assertEquals(chatId, response.chatId());
         Assertions.assertEquals("Неизвестная команда. Введите /help для списка команд", response.text());
-        Assertions.assertNotNull(response.keyboard()); // Должна вернуться основная клавиатура
-        Assertions.assertEquals(Action.NONE, response.action());
+        Assertions.assertNotNull(response.keyboard());
         Assertions.assertEquals(UserState.DEFAULT, telegramIdStateService.getOrCreateUserState(chatId));
     }
 }

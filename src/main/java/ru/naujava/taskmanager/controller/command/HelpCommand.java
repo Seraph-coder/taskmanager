@@ -1,9 +1,8 @@
 package ru.naujava.taskmanager.controller.command;
 
 import org.springframework.stereotype.Component;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
-import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.controller.CommandResponse;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
  * Команда помощи.
@@ -27,6 +26,6 @@ public class HelpCommand implements BotCommand {
                 /delete – начать удаление задачи
                 /cancel – отменить текущее действие
                 /help – показать эту справку
-                """, Action.NONE, null, KeyboardType.MAIN_MENU);
+                """, null, KeyboardType.MAIN_MENU);
     }
 }

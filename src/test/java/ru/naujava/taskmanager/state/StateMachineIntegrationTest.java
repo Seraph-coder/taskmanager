@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
 import ru.naujava.taskmanager.controller.CallbackHandler;
 import ru.naujava.taskmanager.controller.CommandHandler;
 import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.service.TaskService;
 import ru.naujava.taskmanager.service.TelegramIdStateService;
 
@@ -47,7 +47,7 @@ class StateMachineIntegrationTest {
     @Test
     void testFullAddFlow_ViaCommand() {
         StateTransition transition = stateMachine.processMessage(CHAT_ID, "/add");
-        Assertions.assertEquals(BotConstants.MSG_ENTER_TASK_DESCRIPTION, transition.responseText());
+        Assertions.assertEquals("Введите описание задачи", transition.responseText());
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, stateService.getOrCreateUserState(CHAT_ID));
         Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
 
@@ -68,7 +68,7 @@ class StateMachineIntegrationTest {
         taskService.createTask("Задача для удаления", CHAT_ID);
 
         StateTransition transition = stateMachine.processMessage(CHAT_ID, "/delete");
-        Assertions.assertEquals(BotConstants.MSG_ENTER_TASK_NUMBER, transition.responseText());
+        Assertions.assertEquals("Введите номер задачи для удаления", transition.responseText());
         Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_DELETION, stateService.getOrCreateUserState(CHAT_ID));
         Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
 
@@ -90,7 +90,7 @@ class StateMachineIntegrationTest {
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, stateService.getOrCreateUserState(CHAT_ID));
 
         StateTransition transition = stateMachine.processMessage(CHAT_ID, "/cancel");
-        Assertions.assertEquals(BotConstants.MSG_ACTION_CANCELLED, transition.responseText());
+        Assertions.assertEquals("Действие отменено", transition.responseText());
         Assertions.assertEquals(UserState.DEFAULT, stateService.getOrCreateUserState(CHAT_ID));
         Assertions.assertEquals(KeyboardType.MAIN_MENU, transition.keyboardType());
     }
@@ -101,7 +101,7 @@ class StateMachineIntegrationTest {
     @Test
     void testAddFlow_ViaInlineButton() {
         StateTransition transition = stateMachine.processMessage(CHAT_ID, BotConstants.CALLBACK_ADD);
-        Assertions.assertEquals(BotConstants.MSG_ENTER_TASK_DESCRIPTION, transition.responseText());
+        Assertions.assertEquals("Введите описание задачи", transition.responseText());
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, stateService.getOrCreateUserState(CHAT_ID));
         Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
 
@@ -125,7 +125,8 @@ class StateMachineIntegrationTest {
         Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_DELETION, stateService.getOrCreateUserState(CHAT_ID));
 
         transition = stateMachine.processMessage(CHAT_ID, "99");
-        Assertions.assertEquals("Задача с номером 99 не найдена. Попробуйте еще раз.", transition.responseText());
+        Assertions.assertEquals("Задача с номером 99 не найдена. Попробуйте еще раз.",
+                transition.responseText());
         Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
         Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_DELETION, stateService.getOrCreateUserState(CHAT_ID));
     }
@@ -136,7 +137,8 @@ class StateMachineIntegrationTest {
     @Test
     void testUnknownCommand() {
         StateTransition transition = stateMachine.processMessage(CHAT_ID, "/unknown");
-        Assertions.assertEquals(BotConstants.MSG_UNKNOWN_COMMAND, transition.responseText());
+        Assertions.assertEquals("Неизвестная команда. Введите /help для списка команд",
+                transition.responseText());
         Assertions.assertEquals(KeyboardType.MAIN_MENU, transition.keyboardType());
         Assertions.assertEquals(UserState.DEFAULT, stateService.getOrCreateUserState(CHAT_ID));
     }
@@ -150,7 +152,7 @@ class StateMachineIntegrationTest {
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, stateService.getOrCreateUserState(CHAT_ID));
 
         StateTransition transition = stateMachine.processMessage(CHAT_ID, "/delete");
-        Assertions.assertEquals(BotConstants.MSG_ENTER_TASK_NUMBER, transition.responseText());
+        Assertions.assertEquals("Введите номер задачи для удаления", transition.responseText());
         Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_DELETION, stateService.getOrCreateUserState(CHAT_ID));
         Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
     }
@@ -165,7 +167,7 @@ class StateMachineIntegrationTest {
         Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_DELETION, stateService.getOrCreateUserState(CHAT_ID));
 
         StateTransition transition = stateMachine.processMessage(CHAT_ID, "/add");
-        Assertions.assertEquals(BotConstants.MSG_ENTER_TASK_DESCRIPTION, transition.responseText());
+        Assertions.assertEquals("Введите описание задачи", transition.responseText());
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, stateService.getOrCreateUserState(CHAT_ID));
         Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
     }

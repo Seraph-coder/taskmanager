@@ -7,7 +7,7 @@ import ru.naujava.taskmanager.bot.BotMessageProcessor;
 import ru.naujava.taskmanager.bot.MessageRateLimiter;
 import ru.naujava.taskmanager.bot.TelegramBot;
 import ru.naujava.taskmanager.bot.keyboard.KeyboardFactory;
-import ru.naujava.taskmanager.bot.keyboard.KeyboardService;
+import ru.naujava.taskmanager.keyboard.KeyboardProvider;
 import ru.naujava.taskmanager.state.StateMachine;
 
 /**
@@ -26,9 +26,9 @@ public class BotConfig {
      */
     @Bean
     public BotMessageProcessor botMessageProcessor(StateMachine stateMachine,
-                                                   KeyboardService keyboardService,
+                                                   KeyboardProvider keyboardProvider,
                                                    MessageRateLimiter rateLimiter) {
-        return new BotMessageProcessor(stateMachine, keyboardService, rateLimiter);
+        return new BotMessageProcessor(stateMachine, keyboardProvider, rateLimiter);
     }
 
     /**

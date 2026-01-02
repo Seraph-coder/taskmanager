@@ -2,9 +2,8 @@ package ru.naujava.taskmanager.controller.command;
 
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
-import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.controller.CommandResponse;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
  * Команда для отмены текущего действия.
@@ -23,6 +22,6 @@ public class CancelCommand implements BotCommand {
     @Override
     public CommandResponse execute(String message, Long chatId) {
         return new CommandResponse(BotConstants.MSG_ACTION_CANCELLED,
-                Action.NONE, null, KeyboardType.MAIN_MENU);
+                null, KeyboardType.MAIN_MENU);
     }
 }

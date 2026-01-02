@@ -1,10 +1,10 @@
-package ru.naujava.taskmanager.bot.dto;
+package ru.naujava.taskmanager.keyboard.model;
 
 /**
  * Перечисление, представляющее типы клавиатур, которые может отображать бот.
  *
  * @author Seraph-coder
- * @since 23.12.2025
+ * @since 27.12.2025
  */
 public enum KeyboardType {
     /**
@@ -20,4 +20,3 @@ public enum KeyboardType {
      */
     CANCEL
 }
-

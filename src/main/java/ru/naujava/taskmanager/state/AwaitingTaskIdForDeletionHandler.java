@@ -4,20 +4,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
-import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.entity.Task;
 import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.service.TaskService;
 
+import java.util.Optional;
+
+
 /**
- * Обработчик состояния AWAITING_TASK_ID_FOR_DELETION.
+ * Обработчик состояния ожидания номера задачи для удаления.
  *
  * @author Seraph-coder
- * @since 12.12.2025
+ * @since 16.12.2025
  */
 @Component
-public class AwaitingTaskIdForDeletionHandler implements MessageHandler, StateHandler {
+public class AwaitingTaskIdForDeletionHandler implements MessageHandler {
     private final TaskService taskService;
     private final Logger log = LoggerFactory.getLogger(AwaitingTaskIdForDeletionHandler.class);
 
@@ -29,15 +31,15 @@ public class AwaitingTaskIdForDeletionHandler implements MessageHandler, StateHa
     }
 
     @Override
-    public UserState getState() {
-        return UserState.AWAITING_TASK_ID_FOR_DELETION;
+    public Optional<UserState> getHandledState() {
+        return Optional.of(UserState.AWAITING_TASK_ID_FOR_DELETION);
     }
 
     @Override
     public StateTransition handle(Long chatId, String text) {
         if ("/cancel".equalsIgnoreCase(text)) {
             return new StateTransition(BotConstants.MSG_ACTION_CANCELLED,
-                    UserState.DEFAULT, KeyboardType.MAIN_MENU, Action.NONE);
+                    UserState.DEFAULT, KeyboardType.MAIN_MENU);
         }
         try {
             int taskIndex = Integer.parseInt(text.trim());

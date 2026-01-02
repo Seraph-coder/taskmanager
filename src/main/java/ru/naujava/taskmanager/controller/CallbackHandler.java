@@ -4,67 +4,70 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
-import ru.naujava.taskmanager.entity.UserState;
-import ru.naujava.taskmanager.service.TaskService;
+import ru.naujava.taskmanager.controller.callback.CallbackStrategy;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.state.MessageHandler;
 import ru.naujava.taskmanager.state.StateTransition;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * Обработчик callback данных от inline-кнопок.
+ * <p>
+ * Использует Strategy Pattern для обработки различных callback-команд.
+ * Это решение соответствует принципу Open-Closed (OCP):
+ * - Класс открыт для расширения: можно добавить новую стратегию без изменения этого класса
+ * - Класс закрыт для модификации: не нужно изменять switch/case при добавлении новой команды
+ * <p>
+ * Также соблюдается Single Responsibility Principle (SRP):
+ * - Каждая стратегия отвечает за обработку одной конкретной команды
+ * - CallbackHandler отвечает только за маршрутизацию к нужной стратегии
  *
  * @author Seraph-coder
  * @since 16.12.2025
  */
 @Component
 public class CallbackHandler implements MessageHandler {
-    private final TaskService taskService;
+    private final Map<String, CallbackStrategy> strategies;
     private final Logger log = LoggerFactory.getLogger(CallbackHandler.class);
 
     /**
      * Конструктор обработчика.
+     * Spring автоматически инжектит все бины, реализующие {@link CallbackStrategy},
+     * и создает Map для быстрого поиска стратегии по имени callback.
+     *
+     * @param strategyList список всех стратегий обработки callback
      */
-    public CallbackHandler(TaskService taskService) {
-        this.taskService = taskService;
+    public CallbackHandler(List<CallbackStrategy> strategyList) {
+        this.strategies = strategyList.stream()
+                .collect(Collectors.toMap(
+                        CallbackStrategy::getCallbackName,
+                        Function.identity()
+                ));
+        log.info("Зарегистрировано {} callback стратегий: {}",
+                strategies.size(), strategies.keySet());
     }
 
     /**
-     * Обрабатывает callbackData от inline-кнопок.
+     * Обрабатывает callbackData от inline-кнопок, делегируя выполнение соответствующей стратегии.
      */
     @Override
     public StateTransition handle(Long chatId, String callbackData) {
         if (callbackData == null || callbackData.isBlank()) {
             return new StateTransition(BotConstants.MSG_EMPTY_CALLBACK,
-                    null, KeyboardType.NONE, Action.NONE);
+                    null, KeyboardType.NONE);
         }
 
-        return switch (callbackData) {
-            case BotConstants.CALLBACK_LIST -> {
-                String text = taskService.formatTaskList(chatId);
-                yield new StateTransition(text, null, KeyboardType.MAIN_MENU, Action.NONE);
-            }
-            case BotConstants.CALLBACK_ADD ->
-                    new StateTransition(BotConstants.MSG_ENTER_TASK_DESCRIPTION, UserState.AWAITING_TASK_DESCRIPTION,
-                            KeyboardType.CANCEL, Action.NONE);
-            case BotConstants.CALLBACK_DELETE -> {
-                String taskList = taskService.formatTaskList(chatId);
-                if (BotConstants.MSG_TASKS_EMPTY.equals(taskList)) {
-                    yield new StateTransition(taskList, UserState.DEFAULT,
-                            KeyboardType.MAIN_MENU, Action.NONE);
-                } else {
-                    yield new StateTransition("Ваши задачи:\n" + taskList
-                            + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER,
-                            UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL, Action.NONE);
-                }
-            }
-            case BotConstants.CALLBACK_CANCEL ->
-                    new StateTransition(BotConstants.MSG_ACTION_CANCELLED, UserState.DEFAULT,
-                            KeyboardType.MAIN_MENU, Action.NONE);
-            default -> {
-                log.warn("Неизвестный callback: {} от пользователя {}", callbackData, chatId);
-                yield new StateTransition("Неизвестный callback: " + callbackData,
-                        null, KeyboardType.NONE, Action.NONE);
-            }
-        };
+        CallbackStrategy strategy = strategies.get(callbackData);
+        if (strategy == null) {
+            log.warn("Неизвестный callback: {} от пользователя {}", callbackData, chatId);
+            return new StateTransition("Неизвестный callback: " + callbackData,
+                    null, KeyboardType.NONE);
+        }
+
+        return strategy.handle(chatId);
     }
 }

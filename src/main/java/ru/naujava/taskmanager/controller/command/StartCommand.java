@@ -2,9 +2,8 @@ package ru.naujava.taskmanager.controller.command;
 
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
-import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.controller.CommandResponse;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
  * Команда /start.
@@ -21,7 +20,6 @@ public class StartCommand implements BotCommand {
 
     @Override
     public CommandResponse execute(String command, Long chatId) {
-        return new CommandResponse(BotConstants.MSG_WELCOME, Action.NONE, null, KeyboardType.MAIN_MENU);
+        return new CommandResponse(BotConstants.MSG_WELCOME, null, KeyboardType.MAIN_MENU);
     }
 }
-

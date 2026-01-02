@@ -1,17 +1,15 @@
 package ru.naujava.taskmanager.state;
 
-import ru.naujava.taskmanager.bot.dto.KeyboardType;
-import ru.naujava.taskmanager.controller.Action;
 import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
- * Переход состояния с ответом, новым состоянием, типом клавиатуры и действием.
+ * Переход состояния с ответом, новым состоянием и типом клавиатуры.
  *
  * @author Seraph-coder
  * @since 23.12.2025
  */
-public record StateTransition(String responseText, UserState newState,
-                              KeyboardType keyboardType, Action action) {
+public record StateTransition(String responseText, UserState newState, KeyboardType keyboardType) {
 
     /**
      * Конструктор с проверками.
@@ -20,22 +18,12 @@ public record StateTransition(String responseText, UserState newState,
         if (responseText == null || responseText.isBlank()) {
             throw new IllegalArgumentException("responseText не может быть null или пустым");
         }
-        if (action == null) {
-            action = Action.NONE;
-        }
     }
 
     /**
-     * Конструктор без клавиатуры и действия.
+     * Конструктор без клавиатуры.
      */
     public StateTransition(String responseText, UserState newState) {
-        this(responseText, newState, KeyboardType.NONE, Action.NONE);
-    }
-
-    /**
-     * Конструктор без действия.
-     */
-    public StateTransition(String responseText, UserState newState, KeyboardType keyboardType) {
-        this(responseText, newState, keyboardType, Action.NONE);
+        this(responseText, newState, KeyboardType.NONE);
     }
 }

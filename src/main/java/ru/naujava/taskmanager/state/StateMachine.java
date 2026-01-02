@@ -4,11 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.controller.callback.CallbackStrategy;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.service.TelegramIdStateService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Реализация стейтмашины для Telegram бота с использованием паттерна Стратегия.
@@ -21,6 +22,7 @@ import java.util.*;
 public class StateMachine {
     private final TelegramIdStateService telegramIdStateService;
     private final Map<UserState, MessageHandler> handlers = new HashMap<>();
+    private final Set<String> callbackCommands;
     private final Logger log = LoggerFactory.getLogger(StateMachine.class);
     private final MessageHandler defaultHandler;
     private final MessageHandler callbackHandler;
@@ -30,9 +32,17 @@ public class StateMachine {
      */
     public StateMachine(TelegramIdStateService telegramIdStateService,
                         List<MessageHandler> stateHandlers,
+                        List<CallbackStrategy> callbackStrategies,
                         @Qualifier("callbackHandler") MessageHandler callbackHandler) {
         this.telegramIdStateService = telegramIdStateService;
         this.callbackHandler = callbackHandler;
+
+        this.callbackCommands = callbackStrategies.stream()
+                .map(CallbackStrategy::getCallbackName)
+                .collect(Collectors.toSet());
+        log.info("Зарегистрировано {} callback-команд в StateMachine: {}",
+                callbackCommands.size(), callbackCommands);
+
         MessageHandler tempDefault = null;
         Set<UserState> seenStates = new HashSet<>();
         for (MessageHandler handler : stateHandlers) {
@@ -75,7 +85,6 @@ public class StateMachine {
 
             StateTransition transition = handler.handle(chatId, text);
 
-            // Применяем новое состояние, если оно есть в переходе
             if (transition.newState() != null && transition.newState() != currentState) {
                 log.info("Переход состояния для chatId={} из {} в {}", chatId, currentState, transition.newState());
                 setState(chatId, transition.newState());
@@ -91,12 +100,11 @@ public class StateMachine {
 
     /**
      * Проверяет, является ли текст callback-запросом.
+     * Использует Set для O(1) проверки и соответствует принципу OCP:
+     * новые callback-команды автоматически регистрируются через стратегии.
      */
     private boolean isCallback(String text) {
-        return BotConstants.CALLBACK_ADD.equals(text) ||
-                BotConstants.CALLBACK_DELETE.equals(text) ||
-                BotConstants.CALLBACK_LIST.equals(text) ||
-                BotConstants.CALLBACK_CANCEL.equals(text);
+        return callbackCommands.contains(text);
     }
 
     /**

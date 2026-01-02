@@ -1,7 +1,7 @@
-package ru.naujava.taskmanager.bot.dto;
+package ru.naujava.taskmanager.keyboard.model;
 
 /**
- * DTO для кнопки клавиатуры.
+ * Модель кнопки клавиатуры.
  *
  * @param text         Текст кнопки.
  * @param callbackData Данные для callback.
@@ -10,4 +10,3 @@ package ru.naujava.taskmanager.bot.dto;
  */
 public record KeyboardButton(String text, String callbackData) {
 }
-

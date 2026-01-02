@@ -1,9 +1,9 @@
-package ru.naujava.taskmanager.bot.dto;
+package ru.naujava.taskmanager.keyboard.model;
 
 import java.util.List;
 
 /**
- * DTO для клавиатуры.
+ * Модель клавиатуры.
  *
  * @param rows Список рядов кнопок.
  * @author Seraph-coder
@@ -11,4 +11,3 @@ import java.util.List;
  */
 public record Keyboard(List<KeyboardRow> rows) {
 }
-
