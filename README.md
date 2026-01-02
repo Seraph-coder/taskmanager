@@ -95,6 +95,20 @@
 * **Легкое тестирование** — каждый компонент тестируется отдельно
 * **Масштабируемость** — новые фичи добавляются без изменения существующего кода
 
+### Тестирование:
+
+Проект содержит **40 интеграционных тестов**, обеспечивающих полное покрытие функциональности:
+
+* **CallbackHandlerIntegrationTest** (6 тестов) — тестирование обработки callback-запросов с реальными сервисами
+* **StateMachineIntegrationTest** (8 тестов) — полные сценарии взаимодействия пользователя с ботом
+* **TaskServiceIntegrationTest** (9 тестов) — операции с задачами
+* **BotMessageProcessorTest** (3 теста) — обработка сообщений и callback
+* **MessageRateLimiterTest** (4 теста) — защита от спама
+* **UserServiceIntegrationTest** (3 теста) — управление пользователями
+* **TelegramIdStateServiceIntegrationTest** (7 тестов) — управление состояниями пользователей
+
+Все тесты являются интеграционными (`@SpringBootTest`) и работают с реальной конфигурацией Spring и H2 базой данных.
+
 ---
 
 ## Команды бота
@@ -245,7 +259,7 @@ src/test/java/ru/naujava/taskmanager/
 ├── state/                  # Тесты машины состояний
 │   └── StateMachineIntegrationTest.java
 ├── controller/             # Тесты обработчиков
-│   └── CallbackHandlerTest.java
+│   └── CallbackHandlerIntegrationTest.java
 └── bot/                    # Тесты бота
     ├── BotMessageProcessorTest.java
     └── MessageRateLimiterTest.java
@@ -269,7 +283,7 @@ src/test/java/ru/naujava/taskmanager/
        @Override
        public CommandResponse execute(String args, Long chatId) {
            // Ваша логика
-           return new CommandResponse("Ответ", Action.NONE, null, KeyboardType.MAIN_MENU);
+           return new CommandResponse("Ответ", null, KeyboardType.MAIN_MENU);
        }
    }
    ```
@@ -289,8 +303,7 @@ src/test/java/ru/naujava/taskmanager/
        
        @Override
        public StateTransition handle(Long chatId) {
-           // Ваша логика
-           return new StateTransition("Ответ", null, KeyboardType.MAIN_MENU, Action.NONE);
+           return new StateTransition("Ответ", null, KeyboardType.MAIN_MENU);
        }
    }
    ```
