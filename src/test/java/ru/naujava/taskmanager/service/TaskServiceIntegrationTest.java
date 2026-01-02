@@ -414,6 +414,6 @@ public class TaskServiceIntegrationTest {
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
                 taskService.deleteTaskByIndexFromCombinedList(5, user.getTelegramId()));
-        Assertions.assertEquals("Ошибка: Задача с номером 5 не найдена", ex.getMessage());
+        Assertions.assertEquals("Задача с номером 5 не найдена", ex.getMessage());
     }
 }

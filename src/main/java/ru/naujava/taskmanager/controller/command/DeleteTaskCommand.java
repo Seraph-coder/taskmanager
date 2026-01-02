@@ -33,7 +33,7 @@ public class DeleteTaskCommand implements BotCommand {
             return new CommandResponse(
                     BotConstants.MSG_UNKNOWN_USER, null, KeyboardType.NONE);
         }
-        return new CommandResponse(BotConstants.MSG_ENTER_TASK_NUMBER,
+        return new CommandResponse(BotConstants.MSG_ENTER_TASK_NUMBER_DELETE,
                 UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL);
     }
 }

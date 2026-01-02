@@ -144,7 +144,7 @@ public class TaskService {
         int totalSize = completedTasks.size() + uncompletedTasks.size();
 
         if (taskIndex > totalSize) {
-            throw new IllegalArgumentException("Ошибка: Задача с номером " + taskIndex + " не найдена");
+            throw new IllegalArgumentException("Задача с номером " + taskIndex + " не найдена");
         }
 
         Task toDelete;

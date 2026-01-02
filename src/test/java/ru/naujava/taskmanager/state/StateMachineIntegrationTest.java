@@ -78,7 +78,7 @@ class StateMachineIntegrationTest {
         Assertions.assertEquals(KeyboardType.MAIN_MENU, transition.keyboardType());
 
         String taskList = taskService.formatTaskList(CHAT_ID);
-        Assertions.assertEquals(BotConstants.MSG_TASKS_EMPTY, taskList);
+        Assertions.assertEquals("Список задач пуст", taskList);
     }
 
     /**
@@ -170,5 +170,89 @@ class StateMachineIntegrationTest {
         Assertions.assertEquals("Введите описание задачи", transition.responseText());
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, stateService.getOrCreateUserState(CHAT_ID));
         Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
+    }
+
+    /**
+     * Проверяет успешную отметку задачи как выполненной.
+     */
+    @Test
+    void testDoneFlow_Success() {
+        taskService.createTask("Task to complete", CHAT_ID);
+        taskService.createTask("Another task", CHAT_ID);
+
+        StateTransition transition = stateMachine.processMessage(CHAT_ID, "DONE");
+        Assertions.assertTrue(transition.responseText().contains("Task to complete"));
+        Assertions.assertTrue(transition.responseText().contains("Another task"));
+        Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_COMPLETION, stateService.getOrCreateUserState(CHAT_ID));
+        Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
+
+        transition = stateMachine.processMessage(CHAT_ID, "1");
+        Assertions.assertTrue(transition.responseText().contains("Task to complete"));
+        Assertions.assertTrue(transition.responseText().contains("отмечена как выполненная"));
+        Assertions.assertEquals(UserState.DEFAULT, stateService.getOrCreateUserState(CHAT_ID));
+        Assertions.assertEquals(KeyboardType.MAIN_MENU, transition.keyboardType());
+    }
+
+    /**
+     * Проверяет отметку задачи как выполненной, когда все задачи уже выполнены.
+     */
+    @Test
+    void testDoneFlow_NoUncompletedTasks() {
+        StateTransition transition = stateMachine.processMessage(CHAT_ID, "DONE");
+        Assertions.assertEquals("Список задач пуст", transition.responseText());
+        Assertions.assertEquals(UserState.DEFAULT, stateService.getOrCreateUserState(CHAT_ID));
+        Assertions.assertEquals(KeyboardType.MAIN_MENU, transition.keyboardType());
+    }
+
+    /**
+     * Проверяет просмотр выполненных задач.
+     */
+    @Test
+    void testShowDoneFlow() {
+        taskService.createTask("Completed task", CHAT_ID);
+        taskService.markTaskCompletedByIndexAndTelegramId(1, CHAT_ID);
+
+        StateTransition transition = stateMachine.processMessage(CHAT_ID, "SHOWDONE");
+        Assertions.assertTrue(transition.responseText().contains("Completed task"));
+        Assertions.assertTrue(transition.responseText().contains("✓"));
+        Assertions.assertNull(transition.newState());
+        Assertions.assertEquals(KeyboardType.MAIN_MENU, transition.keyboardType());
+    }
+
+    /**
+     * Проверяет отмену операции отметки задачи.
+     */
+    @Test
+    void testDoneFlow_Cancel() {
+        taskService.createTask("Task", CHAT_ID);
+
+        stateMachine.processMessage(CHAT_ID, "DONE");
+        Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_COMPLETION, stateService.getOrCreateUserState(CHAT_ID));
+
+        StateTransition transition = stateMachine.processMessage(CHAT_ID, "/cancel");
+        Assertions.assertEquals("Действие отменено", transition.responseText());
+        Assertions.assertEquals(UserState.DEFAULT, stateService.getOrCreateUserState(CHAT_ID));
+        Assertions.assertEquals(KeyboardType.MAIN_MENU, transition.keyboardType());
+    }
+
+    /**
+     * Проверяет обработку некорректного ввода при отметке задачи.
+     */
+    @Test
+    void testDoneFlow_InvalidInput() {
+        taskService.createTask("Task", CHAT_ID);
+
+        stateMachine.processMessage(CHAT_ID, "DONE");
+
+        StateTransition transition = stateMachine.processMessage(CHAT_ID, "abc");
+        Assertions.assertEquals("Неверный номер задачи. Попробуйте еще раз.", transition.responseText());
+        Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
+        Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_COMPLETION, stateService.getOrCreateUserState(CHAT_ID));
+
+        transition = stateMachine.processMessage(CHAT_ID, "99");
+        Assertions.assertEquals("Задача с номером 99 не найдена. Попробуйте еще раз.",
+                transition.responseText());
+        Assertions.assertEquals(KeyboardType.CANCEL, transition.keyboardType());
+        Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_COMPLETION, stateService.getOrCreateUserState(CHAT_ID));
     }
 }
