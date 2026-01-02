@@ -8,38 +8,39 @@ import ru.naujava.taskmanager.service.TaskService;
 import ru.naujava.taskmanager.state.StateTransition;
 
 /**
- * Стратегия для обработки callback удаления задачи.
+ * Стратегия для обработки callback отметки задачи как выполненной.
  *
  * @author Seraph-coder
  * @since 02.01.2026
  */
 @Component
-public class DeleteTaskCallbackStrategy implements CallbackStrategy {
+public class DoneCallbackStrategy implements CallbackStrategy {
     private final TaskService taskService;
 
-    public DeleteTaskCallbackStrategy(TaskService taskService) {
+    public DoneCallbackStrategy(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @Override
     public StateTransition handle(Long chatId) {
-        String taskList = taskService.formatTaskListForDeletion(chatId);
+        String taskList = taskService.formatUncompletedTaskAsString(chatId);
         if (BotConstants.MSG_TASKS_EMPTY.equals(taskList)) {
             return new StateTransition(
-                    "Нет задач для удаления",
+                    taskList,
                     UserState.DEFAULT,
                     KeyboardType.MAIN_MENU
             );
         }
         return new StateTransition(
-                "Ваши задачи:\n" + taskList + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER_DELETE,
-                UserState.AWAITING_TASK_ID_FOR_DELETION,
+                "Ваши задачи:\n" + taskList + "\n\n" + BotConstants.MSG_ENTER_TASK_NUMBER_COMPLETE,
+                UserState.AWAITING_TASK_ID_FOR_COMPLETION,
                 KeyboardType.CANCEL
         );
     }
 
     @Override
     public String getCallbackName() {
-        return BotConstants.CALLBACK_DELETE;
+        return BotConstants.CALLBACK_DONE;
     }
 }
+
