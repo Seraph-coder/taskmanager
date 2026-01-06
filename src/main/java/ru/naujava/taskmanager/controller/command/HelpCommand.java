@@ -1,6 +1,9 @@
 package ru.naujava.taskmanager.controller.command;
 
 import org.springframework.stereotype.Component;
+import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.controller.CommandResponse;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
  * Команда помощи.
@@ -16,13 +19,7 @@ public class HelpCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String command, Long chatId) {
-        return """
-                Доступные команды:
-                /add [описание] – добавить задачу
-                /todo – показать список задач
-                /delete [номер] – удалить задачу
-                /help – справка по командам
-                """;
+    public CommandResponse execute(String command, Long chatId) {
+        return new CommandResponse(BotConstants.MSG_HELP, null, KeyboardType.MAIN_MENU);
     }
 }

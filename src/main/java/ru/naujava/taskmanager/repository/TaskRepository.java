@@ -14,9 +14,9 @@ import java.util.Optional;
  */
 public interface TaskRepository extends JpaRepository<Task, Long> {
     /**
-     * Находит все задачи, принадлежащие пользователю с указанным Telegram ID.
+     * Находит все задачи пользователя и сортирует их по id по возрастанию.
      */
-    List<Task> findByUser_TelegramId(Long telegramId);
+    List<Task> findByUser_TelegramIdOrderByIdAsc(Long telegramId);
 
     /**
      * Находит задачу по её ID и Telegram ID пользователя.

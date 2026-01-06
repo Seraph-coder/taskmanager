@@ -1,11 +1,14 @@
 package ru.naujava.taskmanager.config;
 
-import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.naujava.taskmanager.bot.NoOpTelegramBot;
+import ru.naujava.taskmanager.bot.BotMessageProcessor;
+import ru.naujava.taskmanager.bot.MessageRateLimiter;
 import ru.naujava.taskmanager.bot.TelegramBot;
-import ru.naujava.taskmanager.controller.CommandHandler;
+import ru.naujava.taskmanager.bot.keyboard.KeyboardFactory;
+import ru.naujava.taskmanager.keyboard.KeyboardProvider;
+import ru.naujava.taskmanager.state.StateMachine;
 
 /**
  * Конфигурация Telegram бота.
@@ -15,32 +18,24 @@ import ru.naujava.taskmanager.controller.CommandHandler;
  */
 @Configuration
 public class BotConfig {
+    @Value("${TELEGRAM_BOT_TOKEN:}")
+    private String botToken;
+
     /**
-     * Получение токена бота из переменных окружения или .env (если есть).
-     * Не падает, если .env отсутствует.
+     * Создание процессора сообщений.
      */
-    public String botToken() {
-        Dotenv dotenv = Dotenv.configure()
-                .ignoreIfMissing()
-                .load();
-        String token = dotenv.get("TELEGRAM_BOT_TOKEN");
-        if (token == null || token.isBlank()) {
-            return null;
-        }
-        return token;
+    @Bean
+    public BotMessageProcessor botMessageProcessor(StateMachine stateMachine,
+                                                   KeyboardProvider keyboardProvider,
+                                                   MessageRateLimiter rateLimiter) {
+        return new BotMessageProcessor(stateMachine, keyboardProvider, rateLimiter);
     }
 
     /**
-     * Создание экземпляра TelegramBot. Если токен не задан — возвращаем NoOpTelegramBot,
-     * безопасную заглушку для компиляции и запуска тестов без .env.
+     * Создание экземпляра TelegramBot.
      */
     @Bean
-    public TelegramBot telegramBot(CommandHandler commandHandler) {
-        String botToken = botToken();
-
-        if (botToken == null || botToken.isBlank()) {
-            return new NoOpTelegramBot(null, commandHandler);
-        }
-        return new TelegramBot(botToken, commandHandler);
+    public TelegramBot telegramBot(BotMessageProcessor messageProcessor, KeyboardFactory keyboardFactory) {
+        return new TelegramBot(messageProcessor, botToken, keyboardFactory);
     }
 }

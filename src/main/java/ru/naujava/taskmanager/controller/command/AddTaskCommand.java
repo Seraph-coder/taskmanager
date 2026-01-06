@@ -1,9 +1,10 @@
 package ru.naujava.taskmanager.controller.command;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.naujava.taskmanager.service.TaskService;
+import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.controller.CommandResponse;
+import ru.naujava.taskmanager.entity.UserState;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
  * Команда для добавления новой задачи.
@@ -13,11 +14,11 @@ import ru.naujava.taskmanager.service.TaskService;
  */
 @Component
 public class AddTaskCommand implements BotCommand {
-    private final Logger log = LoggerFactory.getLogger(AddTaskCommand.class);
-    private final TaskService taskService;
 
-    public AddTaskCommand(TaskService taskService) {
-        this.taskService = taskService;
+    /**
+     * Конструктор добавления задачи.
+     */
+    public AddTaskCommand() {
     }
 
     @Override
@@ -26,20 +27,12 @@ public class AddTaskCommand implements BotCommand {
     }
 
     @Override
-    public String execute(String description, Long chatId) {
+    public CommandResponse execute(String description, Long chatId) {
         if (chatId == null) {
-            return "Неизвестный пользователь";
+            return new CommandResponse(
+                    BotConstants.MSG_UNKNOWN_USER, null, KeyboardType.NONE);
         }
-        if (description == null || description.isBlank()) {
-            return "Использование: /add <описание задачи>";
-        }
-        String trimDescription = description.trim();
-        try {
-            taskService.createTask(trimDescription, chatId);
-            return "Задача “" + trimDescription + "” добавлена";
-        } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
-            return "Ошибка: " + e.getMessage();
-        }
+        return new CommandResponse(BotConstants.MSG_ENTER_TASK_DESCRIPTION,
+                UserState.AWAITING_TASK_DESCRIPTION, KeyboardType.CANCEL);
     }
 }

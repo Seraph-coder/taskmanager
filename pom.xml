@@ -31,7 +31,6 @@
 
         <telegrambots.version>9.2.0</telegrambots.version>
         <commons-lang3.version>3.19.0</commons-lang3.version>
-        <dotenv-java.version>3.2.0</dotenv-java.version>
 	</properties>
     <dependencies>
         <dependency>
@@ -61,11 +60,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.cdimascio</groupId>
-            <artifactId>dotenv-java</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
@@ -90,12 +84,6 @@
                 <groupId>org.telegram</groupId>
                 <artifactId>telegrambots-client</artifactId>
                 <version>${telegrambots.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.cdimascio</groupId>
-                <artifactId>dotenv-java</artifactId>
-                <version>${dotenv-java.version}</version>
             </dependency>
 
             <dependency>

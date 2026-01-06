@@ -6,20 +6,22 @@ import ru.naujava.taskmanager.controller.CommandResponse;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
- * Команда /start.
+ * Команда для отмены текущего действия.
  *
  * @author Seraph-coder
- * @since 25.12.2025
+ * @since 23.12.2025
  */
 @Component
-public class StartCommand implements BotCommand {
+public class CancelCommand implements BotCommand {
+
     @Override
     public String getCommandName() {
-        return "/start";
+        return "/cancel";
     }
 
     @Override
-    public CommandResponse execute(String command, Long chatId) {
-        return new CommandResponse(BotConstants.MSG_WELCOME, null, KeyboardType.MAIN_MENU);
+    public CommandResponse execute(String message, Long chatId) {
+        return new CommandResponse(BotConstants.MSG_ACTION_CANCELLED,
+                null, KeyboardType.MAIN_MENU);
     }
 }
