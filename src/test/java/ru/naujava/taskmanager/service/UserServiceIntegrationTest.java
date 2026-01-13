@@ -22,45 +22,45 @@ public class UserServiceIntegrationTest {
     private UserService userService;
 
     /**
-     * Проверяет создание и поиск пользователя по Telegram ID.
+     * Проверяет создание и поиск пользователя по User ID.
      * <br>
      * Ожидаемое поведение: создает и возвращает существующего пользователя.
      */
     @Test
-    public void getOrCreateByTelegramIdAndFindByTelegramId() {
-        userService.getOrCreateByTelegramId(1L);
-        Optional<User> userOpt = userService.findByTelegramId(1L);
+    public void getOrCreateByUserIdAndFindByUserId() {
+        userService.getOrCreateByUserId(1L);
+        Optional<User> userOpt = userService.findByUserId(1L);
         Assertions.assertTrue(userOpt.isPresent());
-        Assertions.assertEquals(1L, userOpt.get().getTelegramId());
+        Assertions.assertEquals(1L, userOpt.get().getUserId());
     }
 
     /**
-     * Проверяет, что при передаче неверного в getOrCreateByTelegramId
+     * Проверяет, что при передаче неверного в getOrCreateByUserId
      * выбрасывается IllegalArgumentException.
      * <br>
      * Ожидаемое поведение: выбрасывается исключение.
      */
     @Test
-    public void getOrCreateByTelegramIdWithInvalidIdThrowsException() {
+    public void getOrCreateByUserIdWithInvalidIdThrowsException() {
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                userService.getOrCreateByTelegramId(-1L)
+                userService.getOrCreateByUserId(-1L)
         );
-        Assertions.assertEquals("Telegram ID должен быть положительным числом", ex.getMessage());
+        Assertions.assertEquals("User ID должен быть положительным числом", ex.getMessage());
 
         IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                userService.getOrCreateByTelegramId(null)
+                userService.getOrCreateByUserId(null)
         );
-        Assertions.assertEquals("Telegram ID не может быть null", ex2.getMessage());
+        Assertions.assertEquals("User ID не может быть null", ex2.getMessage());
     }
 
     /**
-     * Проверяет поиск пользователя по-некорректному Telegram ID.
+     * Проверяет поиск пользователя по-некорректному User ID.
      * <br>
      * Ожидаемое поведение: возвращается пустой Optional.
      */
     @Test
-    public void findByTelegramIdWithInvalidIdReturnsEmpty() {
-        Assertions.assertTrue(userService.findByTelegramId(-1L).isEmpty());
-        Assertions.assertTrue(userService.findByTelegramId(null).isEmpty());
+    public void findByUserIdWithInvalidIdReturnsEmpty() {
+        Assertions.assertTrue(userService.findByUserId(-1L).isEmpty());
+        Assertions.assertTrue(userService.findByUserId(null).isEmpty());
     }
 }

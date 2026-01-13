@@ -13,7 +13,7 @@ import java.util.Optional;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
     /**
-     * Находит пользователя по его Telegram ID.
+     * Находит пользователя по его User ID.
      */
-    Optional<User> findByTelegramId(Long telegramId);
+    Optional<User> findByUserId(Long userId);
 }

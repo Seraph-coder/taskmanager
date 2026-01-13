@@ -4,10 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.naujava.taskmanager.bot.BotConstants;
-import ru.naujava.taskmanager.controller.command.BotCommand;
+import ru.naujava.taskmanager.controller.command.TextStrategy;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
-import ru.naujava.taskmanager.state.MessageHandler;
+import ru.naujava.taskmanager.state.StateHandler;
 import ru.naujava.taskmanager.state.StateTransition;
 
 import java.util.List;
@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
  * @since 16.12.2025
  */
 @Component
-public class CommandHandler implements MessageHandler {
-    private final Map<String, BotCommand> commands;
+public class CommandHandler implements StateHandler {
+    private final Map<String, TextStrategy> commands;
     private final Logger log = LoggerFactory.getLogger(CommandHandler.class);
 
     /**
      * Конструктор обработчика команд.
      */
-    public CommandHandler(List<BotCommand> commandsList) {
+    public CommandHandler(List<TextStrategy> commandsList) {
         this.commands = commandsList.stream()
                 .collect(Collectors.toMap(
                         c -> c.getCommandName().toLowerCase(),
@@ -40,8 +40,8 @@ public class CommandHandler implements MessageHandler {
     }
 
     @Override
-    public Optional<UserState> getHandledState() {
-        return Optional.of(UserState.DEFAULT);
+    public UserState getHandledState() {
+        return UserState.DEFAULT;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class CommandHandler implements MessageHandler {
         String trimmed = text.trim();
         String cmd = trimmed.split("\\s+")[0].toLowerCase();
 
-        if ("/cancel".equalsIgnoreCase(cmd)) {
+        if (BotConstants.CANCEL_COMMAND.equalsIgnoreCase(cmd)) {
             return new StateTransition(BotConstants.MSG_ACTION_CANCELLED,
                     UserState.DEFAULT, KeyboardType.MAIN_MENU);
         }

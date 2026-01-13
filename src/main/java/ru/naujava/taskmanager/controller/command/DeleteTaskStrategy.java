@@ -6,33 +6,34 @@ import ru.naujava.taskmanager.controller.CommandResponse;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
+
 /**
- * Команда для добавления новой задачи.
+ * Команда для удаления задачи по её номеру в списке.
  *
  * @author Seraph-coder
  * @since 02.11.2025
  */
 @Component
-public class AddTaskCommand implements BotCommand {
+public class DeleteTaskStrategy implements TextStrategy {
 
     /**
-     * Конструктор добавления задачи.
+     * Конструктор удаления задачи.
      */
-    public AddTaskCommand() {
+    public DeleteTaskStrategy() {
     }
 
     @Override
     public String getCommandName() {
-        return "/add";
+        return "/delete";
     }
 
     @Override
-    public CommandResponse execute(String description, Long chatId) {
+    public CommandResponse execute(String taskId, Long chatId) {
         if (chatId == null) {
             return new CommandResponse(
                     BotConstants.MSG_UNKNOWN_USER, null, KeyboardType.NONE);
         }
-        return new CommandResponse(BotConstants.MSG_ENTER_TASK_DESCRIPTION,
-                UserState.AWAITING_TASK_DESCRIPTION, KeyboardType.CANCEL);
+        return new CommandResponse(BotConstants.MSG_ENTER_TASK_NUMBER_DELETE,
+                UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL);
     }
 }

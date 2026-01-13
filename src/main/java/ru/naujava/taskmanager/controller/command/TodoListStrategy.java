@@ -13,13 +13,13 @@ import ru.naujava.taskmanager.service.TaskService;
  * @since 02.11.2025
  */
 @Component
-public class TodoListCommand implements BotCommand {
+public class TodoListStrategy implements TextStrategy {
     private final TaskService taskService;
 
     /**
      * Конструктор отображения списка задач.
      */
-    public TodoListCommand(TaskService taskService) {
+    public TodoListStrategy(TaskService taskService) {
         this.taskService = taskService;
     }
 

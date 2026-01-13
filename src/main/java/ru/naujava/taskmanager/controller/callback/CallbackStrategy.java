@@ -12,8 +12,6 @@ public interface CallbackStrategy {
 
     /**
      * Возвращает имя callback-команды, которую обрабатывает эта стратегия.
-     *
-     * @return имя callback-команды
      */
     String getCallbackName();
 

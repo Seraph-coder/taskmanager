@@ -8,8 +8,6 @@ import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.service.TaskService;
 
-import java.util.Optional;
-
 /**
  * Обработчик состояния ожидания описания задачи.
  *
@@ -17,25 +15,25 @@ import java.util.Optional;
  * @since 12.12.2025
  */
 @Component
-public class AwaitingTaskDescriptionHandler implements MessageHandler {
+public class AwaitingTaskDescriptionHandler implements StateHandler {
     private final TaskService taskService;
     private final Logger log = LoggerFactory.getLogger(AwaitingTaskDescriptionHandler.class);
 
     /**
-     * Конструктор.
+     * Конструктор обработчика состояния ожидания описания задачи.
      */
     public AwaitingTaskDescriptionHandler(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @Override
-    public Optional<UserState> getHandledState() {
-        return Optional.of(UserState.AWAITING_TASK_DESCRIPTION);
+    public UserState getHandledState() {
+        return UserState.AWAITING_TASK_DESCRIPTION;
     }
 
     @Override
     public StateTransition handle(Long chatId, String text) {
-        if ("/cancel".equalsIgnoreCase(text)) {
+        if (BotConstants.CANCEL_COMMAND.equalsIgnoreCase(text)) {
             return new StateTransition(BotConstants.MSG_ACTION_CANCELLED,
                     UserState.DEFAULT, KeyboardType.MAIN_MENU);
         }

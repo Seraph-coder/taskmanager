@@ -1,8 +1,7 @@
 # Task Manager — Telegram Bot
 
-Современное приложение — Telegram-бот для управления личными задачами.
-Проект написан на Java 21/Spring Boot и демонстрирует чистую архитектуру с применением принципов SOLID и паттернов
-проектирования.
+Современное приложение для управления личными задачами.
+Проект написан на Java 21/Spring Boot.
 
 ---
 
@@ -11,126 +10,6 @@
 Проект реализует функционал управления задачами через Telegram-бота: добавление, просмотр, отметка выполненных и
 удаление задач.
 Данные сохраняются в PostgreSQL с использованием JPA/Hibernate.
-
-### Ключевые особенности:
-
-- ✅ **SOLID принципы** — архитектура полностью соответствует OCP, SRP, LSP, ISP, DIP
-- ✅ **Strategy Pattern** — для обработки команд и callback-запросов
-- ✅ **State Pattern** — машина состояний для управления диалогами
-- ✅ **Dependency Injection** — через Spring Framework с автоматической регистрацией стратегий
-- ✅ **Чистая архитектура** — четкое разделение слоев и абстракций
-- ✅ **Масштабируемость** — добавление новых команд не требует изменения существующего кода
-
----
-
-## Архитектура
-
-Проект следует принципам **SOLID** и использует паттерны проектирования для обеспечения расширяемости и
-поддерживаемости.
-
-### Применение SOLID:
-
-- **SRP** (Single Responsibility): каждая стратегия отвечает только за одну команду/callback
-- **OCP** (Open-Closed): добавление новых команд не требует изменения `CommandHandler` или `CallbackHandler`
-- **LSP** (Liskov Substitution): все стратегии взаимозаменяемы через интерфейсы
-- **ISP** (Interface Segregation): интерфейсы `BotCommand`, `CallbackStrategy`, `MessageHandler` содержат только
-  необходимые методы
-- **DIP** (Dependency Inversion): высокоуровневые модули зависят от абстракций, а не от конкретных реализаций
-
-### Архитектурные решения:
-
-- **Map-based маршрутизация** вместо switch/case — команды автоматически регистрируются через Spring DI
-- **Strategy Pattern** для команд и callback — каждая команда/callback — отдельный класс
-- **State Pattern** для диалогов — машина состояний с обработчиками для каждого состояния
-- **Абстракция от Telegram API** — доменные модели клавиатур не зависят от библиотеки
-
-### Слои приложения:
-
-* **entity** — JPA-сущности (`Task`, `User`, `UserState`, `TelegramIdState`)
-* **repository** — интерфейсы JPA (`TaskRepository`, `UserRepository`, `TelegramIdStateRepository`)
-* **service** — бизнес-логика (`TaskService`, `UserService`, `TelegramIdStateService`)
-* **state** — машина состояний и обработчики:
-    * `StateMachine` — маршрутизация сообщений к обработчикам на основе состояния
-    * `MessageHandler` — интерфейс для обработки сообщений
-    * `StateHandler` — интерфейс для обработчиков состояний
-    * `StateTransition` — модель перехода состояния
-  * Обработчики состояний: `AwaitingTaskDescriptionHandler`, `AwaitingTaskIdForDeletionHandler`,
-    `AwaitingTaskIdForCompletionHandler`
-* **controller** — обработка команд и callback с использованием паттерна Strategy:
-    * `command/` — реализации команд (`StartCommand`, `AddTaskCommand`, `TodoListCommand`, `DoneCommand`,
-      `ShowDoneCommand`, `DeleteTaskCommand`, и т.д.)
-    * `callback/` — стратегии для callback-запросов (`AddTaskCallbackStrategy`, `DeleteTaskCallbackStrategy`,
-      `DoneCallbackStrategy`, `ShowDoneCallbackStrategy`, и т.д.)
-    * `CommandHandler` — маршрутизация команд к соответствующим стратегиям
-    * `CallbackHandler` — маршрутизация callback к соответствующим стратегиям
-    * `CommandResponse` — модель ответа команды
-* **keyboard** — модель клавиатуры (абстракция от Telegram API):
-    * `model/` — доменные модели (`Keyboard`, `KeyboardButton`, `KeyboardRow`, `KeyboardType`)
-    * `KeyboardProvider` — провайдер клавиатур, предоставляет клавиатуру по типу
-* **bot** — интеграция с Telegram API:
-    * `keyboard/` — сервисы для работы с клавиатурами:
-        * `KeyboardFactory` — преобразование доменных моделей в формат Telegram API
-        * `KeyboardService` — создание конкретных клавиатур (главное меню, отмена)
-    * `TelegramBot` — основной класс бота, обработка обновлений от Telegram
-    * `BotMessageProcessor` — процессор сообщений с rate limiting
-    * `MessageRateLimiter` — защита от спама
-    * `BotResponse` — модель ответа бота
-    * `BotConstants` — константы (сообщения, callback-данные, тексты кнопок)
-* **config** — конфигурация Spring (`BotConfig`)
-
-### Принципы проектирования:
-
-1. **Open-Closed Principle (OCP)**:
-    - Новые команды и callback-стратегии добавляются без изменения существующего кода
-    - Использование Map вместо switch/case для маршрутизации
-    - Автоматическая регистрация стратегий через Spring DI
-
-2. **Single Responsibility Principle (SRP)**:
-    - Каждый класс отвечает за одну конкретную задачу
-    - Разделение на слои: presentation (bot), application (controller), domain (service), infrastructure (repository)
-
-3. **Dependency Inversion Principle (DIP)**:
-    - Зависимости направлены на абстракции (интерфейсы), а не на конкретные реализации
-    - KeyboardProvider зависит от KeyboardService через интерфейс
-    - StateMachine работает с MessageHandler, а не с конкретными обработчиками
-
-4. **Strategy Pattern**:
-    - Команды реализуют интерфейс `BotCommand`
-    - Callback реализуют интерфейс `CallbackStrategy`
-    - Обработчики состояний реализуют интерфейс `MessageHandler`
-
-5. **State Pattern**:
-    - Для управления диалогами и переходами между состояниями
-    - Каждое состояние имеет свой обработчик
-    - Переходы между состояниями управляются через `StateTransition`
-
-6. **Abstraction Layer**:
-    - Доменные модели клавиатур изолированы от Telegram API
-    - Только `KeyboardFactory` и `TelegramBot` зависят от библиотеки Telegram
-    - Легко заменить Telegram на другую платформу
-
-### Преимущества текущей архитектуры:
-
-* **Нет switch/case** — все маршрутизация через Map и стратегии
-* **Автоматическая регистрация** — Spring DI автоматически находит и регистрирует команды, callback и обработчики
-* **Изолированность от библиотек** — только 2 класса зависят от Telegram API (`TelegramBot` и `KeyboardFactory`)
-* **Легкое тестирование** — каждый компонент тестируется отдельно
-* **Масштабируемость** — новые фичи добавляются без изменения существующего кода
-
-### Тестирование:
-
-Проект содержит **56 интеграционных тестов**, обеспечивающих полное покрытие функциональности:
-
-* **StateMachineIntegrationTest** (13 тестов) — полные сценарии взаимодействия пользователя с ботом, включая
-  Done/ShowDone
-* **TaskServiceIntegrationTest** (20 тестов) — операции с задачами, включая отметку выполненных
-* **CallbackHandlerIntegrationTest** (6 тестов) — тестирование обработки callback-запросов с реальными сервисами
-* **TelegramIdStateServiceIntegrationTest** (7 тестов) — управление состояниями пользователей
-* **MessageRateLimiterTest** (4 теста) — защита от спама
-* **BotMessageProcessorTest** (3 теста) — обработка сообщений и callback
-* **UserServiceIntegrationTest** (3 теста) — управление пользователями
-
-Все тесты являются интеграционными (`@SpringBootTest`) и работают с реальной конфигурацией Spring и H2 базой данных.
 
 ---
 
@@ -234,7 +113,6 @@ src/main/java/ru/naujava/taskmanager/
 ├── service/                # Бизнес-логика
 ├── state/                  # Машина состояний и обработчики
 │   ├── StateMachine.java                  # Центральная машина состояний
-│   ├── MessageHandler.java                # Интерфейс обработчика сообщений
 │   ├── StateHandler.java                  # Интерфейс обработчика состояний
 │   ├── StateTransition.java               # Модель перехода состояния
 │   ├── AwaitingTaskDescriptionHandler.java
@@ -289,108 +167,6 @@ src/test/java/ru/naujava/taskmanager/
     ├── BotMessageProcessorTest.java
     └── MessageRateLimiterTest.java
 ```
-
----
-
-## Как расширить функционал
-
-### Добавить новую команду
-
-1. Создайте класс, реализующий `BotCommand` в пакете `controller.command`:
-   ```java
-   @Component
-   public class MyNewCommand implements BotCommand {
-       @Override
-       public String getCommandName() {
-           return "/mycommand";
-       }
-       
-       @Override
-       public CommandResponse execute(String args, Long chatId) {
-           // Ваша логика
-           return new CommandResponse("Ответ", null, KeyboardType.MAIN_MENU);
-       }
-   }
-   ```
-
-2. Spring автоматически зарегистрирует команду через `CommandHandler`.
-
-### Добавить новый callback
-
-1. Создайте класс, реализующий `CallbackStrategy` в пакете `controller.callback`:
-   ```java
-   @Component
-   public class MyCallbackStrategy implements CallbackStrategy {
-       @Override
-       public String getCallbackName() {
-           return "MY_CALLBACK";
-       }
-       
-       @Override
-       public StateTransition handle(Long chatId) {
-           return new StateTransition("Ответ", null, KeyboardType.MAIN_MENU);
-       }
-   }
-   ```
-
-2. Spring автоматически зарегистрирует callback через `CallbackHandler`.
-
-### Добавить новое состояние
-
-1. Добавьте состояние в enum `UserState`:
-   ```java
-   public enum UserState {
-       DEFAULT,
-       AWAITING_TASK_DESCRIPTION,
-       AWAITING_TASK_ID_FOR_DELETION,
-       MY_NEW_STATE  // Новое состояние
-   }
-   ```
-
-2. Создайте обработчик, реализующий `MessageHandler` в пакете `state`:
-   ```java
-   @Component
-   public class MyNewStateHandler implements MessageHandler {
-       @Override
-       public Optional<UserState> getHandledState() {
-           return Optional.of(UserState.MY_NEW_STATE);
-       }
-       
-       @Override
-       public StateTransition handle(Long chatId, String text) {
-           // Ваша логика обработки
-           return new StateTransition("Ответ", UserState.DEFAULT);
-       }
-   }
-   ```
-
-3. Spring автоматически зарегистрирует обработчик в `StateMachine`.
-
-### Добавить новый тип клавиатуры
-
-1. Добавьте тип в enum `KeyboardType`:
-   ```java
-   public enum KeyboardType {
-       MAIN_MENU,
-       CANCEL,
-       NONE,
-       MY_KEYBOARD  // Новый тип
-   }
-   ```
-
-2. Добавьте метод создания клавиатуры в `KeyboardService`:
-   ```java
-   public Keyboard buildMyKeyboard() {
-       KeyboardButton button = new KeyboardButton("Текст", "CALLBACK_DATA");
-       KeyboardRow row = new KeyboardRow(List.of(button));
-       return new Keyboard(List.of(row));
-   }
-   ```
-
-3. Зарегистрируйте клавиатуру в `KeyboardProvider`:
-   ```java
-   keyboardSuppliers.put(KeyboardType.MY_KEYBOARD, keyboardService::buildMyKeyboard);
-   ```
 
 ---
 
@@ -456,5 +232,4 @@ src/test/java/ru/naujava/taskmanager/
 
 ## Автор
 
-**Seraph-coder**  
-Проект создан для демонстрации применения принципов SOLID и паттернов проектирования в реальном приложении.
+**Seraph-coder**

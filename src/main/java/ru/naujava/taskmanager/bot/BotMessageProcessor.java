@@ -40,7 +40,7 @@ public class BotMessageProcessor {
      * Обрабатывает callback.
      */
     public List<BotResponse> processCallback(Long chatId, String data) {
-        log.info("Обработка callback от chatId: {}", chatId);
+        log.debug("Обработка callback от chatId: {}", chatId);
         return processTextMessage(chatId, data);
     }
 
@@ -49,11 +49,11 @@ public class BotMessageProcessor {
      */
     public List<BotResponse> processTextMessage(Long chatId, String text) {
         if (rateLimiter.isRateLimited(chatId)) {
-            log.warn("Rate limit exceeded for chatId: {}", chatId);
+            log.debug("Лимит сообщений исчерпан для chatId: {}", chatId);
             return List.of(new BotResponse(chatId,
                     "Слишком много сообщений. Подождите минуту.", null));
         }
-        log.info("Обработка текстового сообщения от chatId: {}", chatId);
+        log.debug("Обработка текстового сообщения от chatId: {}", chatId);
 
         List<BotResponse> responses = new ArrayList<>();
         try {
@@ -62,7 +62,7 @@ public class BotMessageProcessor {
             responses.add(new BotResponse(chatId, transition.responseText(), keyboard));
 
         } catch (Exception e) {
-            log.warn("Ошибка при обработки сообщения для chatId={}: {}", chatId, e.getMessage(), e);
+            log.error("Ошибка при обработки сообщения для chatId={}: {}", chatId, e.getMessage(), e);
             responses.add(new BotResponse(chatId,
                     "Произошла внутренняя ошибка. Попробуйте позже.", null));
         }

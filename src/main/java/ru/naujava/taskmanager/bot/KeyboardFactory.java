@@ -1,4 +1,4 @@
-package ru.naujava.taskmanager.bot.keyboard;
+package ru.naujava.taskmanager.bot;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -13,10 +13,11 @@ import java.util.stream.Collectors;
 
 /**
  * Фабрика для преобразования внутреннего представления клавиатуры в формат Telegram API.
- * <p>
+ * <br>
  * Этот класс является единственным местом, помимо {@link ru.naujava.taskmanager.bot.TelegramBot},
  * которое зависит от библиотеки Telegram Bots.
- * </p>
+ * В будущем, при добавлении поддержки других платформ, стоит добавить интерфейс для фабрик и
+ * реализовать отдельные фабрики для каждой платформы.
  *
  * @author Seraph-coder
  * @since 23.12.2025

@@ -16,7 +16,6 @@ import java.util.Optional;
  * @since 01.11.2025
  */
 @Service
-@Transactional
 public class UserService {
     private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
@@ -29,30 +28,32 @@ public class UserService {
     }
 
     /**
-     * Находит пользователя по Telegram ID.
+     * Находит пользователя по User ID.
      */
-    public Optional<User> findByTelegramId(Long telegramId) {
-        return userRepository.findByTelegramId(telegramId);
+    public Optional<User> findByUserId(Long userId) {
+        return userRepository.findByUserId(userId);
     }
 
     /**
-     * Возвращает существующего пользователя по Telegram ID или создает
+     * Возвращает существующего пользователя по User ID или создает
      * нового, если пользователь не найден.
-     * @throws IllegalArgumentException если telegramId null или не положительное число
+     *
+     * @throws IllegalArgumentException если userId null или не положительное число
      */
-    public User getOrCreateByTelegramId(Long telegramId) {
-        if (telegramId == null) {
-            throw new IllegalArgumentException("Telegram ID не может быть null");
+    @Transactional
+    public User getOrCreateByUserId(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID не может быть null");
         }
-        if (telegramId <= 0) {
-            throw new IllegalArgumentException("Telegram ID должен быть положительным числом");
+        if (userId <= 0) {
+            throw new IllegalArgumentException("User ID должен быть положительным числом");
         }
-        return userRepository.findByTelegramId(telegramId)
+        return userRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     User newUser = new User();
-                    newUser.setTelegramId(telegramId);
+                    newUser.setUserId(userId);
                     User saved = userRepository.save(newUser);
-                    log.info("Создан новый пользователь с telegramId: {}", telegramId);
+                    log.debug("Создан новый пользователь с userId: {}", userId);
                     return saved;
                 });
     }

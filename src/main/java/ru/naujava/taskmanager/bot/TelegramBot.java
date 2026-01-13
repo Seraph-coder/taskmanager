@@ -12,15 +12,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import ru.naujava.taskmanager.bot.keyboard.KeyboardFactory;
 
 import java.util.List;
 
 /**
  * TelegramBot реализует бота для Telegram,
  * который обрабатывает входящие сообщения и отвечает на них.
- * Поддерживает стандартные команды вида /command,
- * а также inline-кнопки и обработку CallbackQuery.
  *
  * @author Seraph-coder
  * @since 01.11.2025
@@ -35,7 +32,8 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
     /**
      * Конструктор телеграм-бота.
      */
-    public TelegramBot(BotMessageProcessor messageProcessor, String botToken, KeyboardFactory keyboardFactory) {
+    public TelegramBot(BotMessageProcessor messageProcessor, String botToken,
+                       KeyboardFactory keyboardFactory) {
         this.botToken = botToken;
         this.messageProcessor = messageProcessor;
         this.keyboardFactory = keyboardFactory;

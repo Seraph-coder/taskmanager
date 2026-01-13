@@ -3,14 +3,14 @@ package ru.naujava.taskmanager.controller.command;
 import ru.naujava.taskmanager.controller.CommandResponse;
 
 /**
- * Команды бота.
+ * Интерфейс стратегии для обработки callback-команд.
  *
  * @author Seraph-coder
  * @since 02.11.2025
  */
-public interface BotCommand {
+public interface TextStrategy {
     /**
-     * Получить имя команды.
+     * Получить имя текстовой команды.
      */
     String getCommandName();
 

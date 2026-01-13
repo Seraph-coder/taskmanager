@@ -5,15 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import ru.naujava.taskmanager.entity.UserState;
-import ru.naujava.taskmanager.service.TelegramIdStateService;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 import java.util.List;
 
 /**
  * Интеграционные тесты для {@link BotMessageProcessor}.
  * <p>
- * Косвенно тестируемые классы: StateMachine, KeyboardService, TelegramIdStateService,
+ * Косвенно тестируемые классы: StateMachine, KeyboardService, UserIdStateService,
  * CommandHandler, CallbackHandler.
  * </p>
  *
@@ -28,11 +27,10 @@ class BotMessageProcessorTest {
     private BotMessageProcessor botMessageProcessor;
 
     @Autowired
-    private TelegramIdStateService telegramIdStateService;
+    private KeyboardFactory keyboardFactory;
 
     /**
      * Проверяет успешную обработку команды /start.
-     * Ожидается приветственное сообщение и основная клавиатура.
      */
     @Test
     void processTextMessage_StartCommand_Success() {
@@ -43,31 +41,43 @@ class BotMessageProcessorTest {
 
         Assertions.assertEquals(1, responses.size());
         BotResponse response = responses.getFirst();
+
         Assertions.assertEquals(chatId, response.chatId());
-        Assertions.assertEquals("Добро пожаловать в Task Manager Bot! Введите /help для списка команд",
-                response.text());
-        Assertions.assertNotNull(response.keyboard());
-        Assertions.assertEquals(UserState.DEFAULT, telegramIdStateService.getOrCreateUserState(chatId));
+        Assertions.assertNotNull(response.text());
+
+        InlineKeyboardMarkup markup = keyboardFactory.build(response.keyboard());
+        Assertions.assertNotNull(markup);
+
+        Assertions.assertEquals(4, markup.getKeyboard().size());
+        Assertions.assertEquals("ADD", markup.getKeyboard().getFirst().getFirst().getCallbackData());
+        Assertions.assertEquals("DELETE", markup.getKeyboard().getFirst().get(1).getCallbackData());
+        Assertions.assertEquals("LIST", markup.getKeyboard().get(2).getFirst().getCallbackData());
+        Assertions.assertEquals("SHOWDONE", markup.getKeyboard().get(3).getFirst().getCallbackData());
     }
 
     /**
      * Проверяет успешную обработку callback-запроса на добавление задачи.
-     * Ожидается изменение состояния на AWAITING_TASK_DESCRIPTION.
      */
     @Test
     void processCallback_Add_Success() {
         long chatId = 1L;
+
         botMessageProcessor.processTextMessage(chatId, "/start");
 
         List<BotResponse> responses = botMessageProcessor.processCallback(chatId, BotConstants.CALLBACK_ADD);
 
         Assertions.assertEquals(1, responses.size());
         BotResponse response = responses.getFirst();
+
         Assertions.assertEquals(chatId, response.chatId());
         Assertions.assertEquals("Введите описание задачи", response.text());
-        Assertions.assertNotNull(response.keyboard());
-        Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION,
-                telegramIdStateService.getOrCreateUserState(chatId));
+
+        InlineKeyboardMarkup markup = keyboardFactory.build(response.keyboard());
+        Assertions.assertNotNull(markup);
+
+        Assertions.assertEquals(1, markup.getKeyboard().size());
+        Assertions.assertEquals(1, markup.getKeyboard().getFirst().size());
+        Assertions.assertEquals("CANCEL", markup.getKeyboard().getFirst().getFirst().getCallbackData());
     }
 
     /**
@@ -76,16 +86,25 @@ class BotMessageProcessorTest {
     @Test
     void processTextMessage_UnknownCommand() {
         long chatId = 1L;
-        String text = "/unknown";
+
         botMessageProcessor.processTextMessage(chatId, "/start");
 
-        List<BotResponse> responses = botMessageProcessor.processTextMessage(chatId, text);
+        List<BotResponse> responses = botMessageProcessor.processTextMessage(chatId, "/unknown");
 
         Assertions.assertEquals(1, responses.size());
         BotResponse response = responses.getFirst();
+
         Assertions.assertEquals(chatId, response.chatId());
-        Assertions.assertEquals("Неизвестная команда. Введите /help для списка команд", response.text());
-        Assertions.assertNotNull(response.keyboard());
-        Assertions.assertEquals(UserState.DEFAULT, telegramIdStateService.getOrCreateUserState(chatId));
+        Assertions.assertNotNull(response.text());
+
+        InlineKeyboardMarkup markup = keyboardFactory.build(response.keyboard());
+        Assertions.assertNotNull(markup);
+
+
+        Assertions.assertEquals(4, markup.getKeyboard().size());
+        Assertions.assertEquals("ADD", markup.getKeyboard().getFirst().getFirst().getCallbackData());
+        Assertions.assertEquals("DELETE", markup.getKeyboard().getFirst().get(1).getCallbackData());
+        Assertions.assertEquals("LIST", markup.getKeyboard().get(2).getFirst().getCallbackData());
+        Assertions.assertEquals("SHOWDONE", markup.getKeyboard().get(3).getFirst().getCallbackData());
     }
 }

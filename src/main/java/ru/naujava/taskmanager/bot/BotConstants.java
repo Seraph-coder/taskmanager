@@ -29,16 +29,15 @@ public final class BotConstants {
     public static final String MSG_UNKNOWN_COMMAND = "Неизвестная команда. Введите /help для списка команд";
     public static final String MSG_WELCOME = "Добро пожаловать в Task Manager Bot! Введите /help для списка команд";
     public static final String MSG_HELP = """
-                Доступные команды:
-                /add – начать добавление новой задачи
-                /todo – показать список невыполненных задач
-                /done – отметить задачу как выполненную
-                /showdone – показать список выполненных задач
-                /delete – начать удаление задачи
-                /cancel – отменить текущее действие
-                /help – показать эту справку
-                """;
-    public static final String MSG_EMPTY_CALLBACK = "Пустые данные обратного вызова";
+            Доступные команды:
+            /add – начать добавление новой задачи
+            /todo – показать список невыполненных задач
+            /done – отметить задачу как выполненную
+            /showdone – показать список выполненных задач
+            /delete – начать удаление задачи
+            /cancel – отменить текущее действие
+            /help – показать эту справку
+            """;
     public static final String MSG_TASKS_EMPTY = "Список задач пуст";
     public static final String MSG_ENTER_TASK_DESCRIPTION = "Введите описание задачи";
     public static final String MSG_ENTER_TASK_NUMBER_DELETE = "Введите номер задачи для удаления";
@@ -49,6 +48,9 @@ public final class BotConstants {
     // Ограничения на частоту сообщений
     public static final int MAX_MESSAGES_PER_MINUTE = 10;
     public static final long TIME_WINDOW_MS = 60000;
+
+    // Команды
+    public static final String CANCEL_COMMAND = "/cancel";
 
 
     /**

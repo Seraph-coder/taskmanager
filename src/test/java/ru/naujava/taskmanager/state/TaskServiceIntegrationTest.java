@@ -1,4 +1,4 @@
-package ru.naujava.taskmanager.service;
+package ru.naujava.taskmanager.state;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import ru.naujava.taskmanager.entity.Task;
 import ru.naujava.taskmanager.entity.User;
+import ru.naujava.taskmanager.service.TaskService;
 
 import java.util.List;
 
@@ -23,20 +24,20 @@ public class TaskServiceIntegrationTest {
     private TaskService taskService;
 
     /**
-     * Создает задачи и находит все задачи пользователя по его Telegram ID.
+     * Создает задачи и находит все задачи пользователя по его User ID.
      * <br>
-     * Ожидаемое поведение: Создает задачи и возвращает список задач, связанных с указанным Telegram ID.
+     * Ожидаемое поведение: Создает задачи и возвращает список задач, связанных с указанным User ID.
      */
     @Test
-    public void createTaskAndFindAllTasksByTelegramId() {
+    public void createTaskAndFindAllTasksByUserId() {
         User user = new User(1L);
         User anotherUser = new User(2L);
 
-        taskService.createTask("Задача целевого пользователя", user.getTelegramId());
-        taskService.createTask("Задача другого пользователя", anotherUser.getTelegramId());
-        taskService.createTask("Задача целевого пользователя 2", user.getTelegramId());
+        taskService.createTask("Задача целевого пользователя", user.getUserId());
+        taskService.createTask("Задача другого пользователя", anotherUser.getUserId());
+        taskService.createTask("Задача целевого пользователя 2", user.getUserId());
 
-        List<Task> tasks = taskService.findAllTasksByTelegramId(user.getTelegramId());
+        List<Task> tasks = taskService.findAllTasksByUserId(user.getUserId());
 
         Assertions.assertEquals(2, tasks.size());
         Assertions.assertTrue(tasks.stream()
@@ -46,17 +47,17 @@ public class TaskServiceIntegrationTest {
     }
 
     /**
-     * Не находит задачу для несуществующего Telegram ID.
+     * Не находит задачу для несуществующего User ID.
      * <br>
      * Ожидаемое поведение: возвращает пустой список.
      */
     @Test
-    public void findAllTasksByNonExistentTelegramIdReturnsEmptyList() {
+    public void findAllTasksByNonExistentUserIdReturnsEmptyList() {
         User user = new User(1L);
 
-        taskService.createTask("Задача другого пользователя", user.getTelegramId());
+        taskService.createTask("Задача другого пользователя", user.getUserId());
 
-        List<Task> tasks = taskService.findAllTasksByTelegramId(999L);
+        List<Task> tasks = taskService.findAllTasksByUserId(999L);
 
         Assertions.assertTrue(tasks.isEmpty());
     }
@@ -73,54 +74,54 @@ public class TaskServiceIntegrationTest {
         User user = new User(1L);
         User anotherUser = new User(2L);
 
-        taskService.createTask("Повторяющаяся задача", user.getTelegramId());
-        taskService.createTask("Повторяющаяся задача", anotherUser.getTelegramId());
+        taskService.createTask("Повторяющаяся задача", user.getUserId());
+        taskService.createTask("Повторяющаяся задача", anotherUser.getUserId());
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.createTask("Повторяющаяся задача", user.getTelegramId()));
+                taskService.createTask("Повторяющаяся задача", user.getUserId()));
         Assertions.assertEquals("Задача с описанием 'Повторяющаяся задача' уже существует",
                 ex.getMessage());
     }
 
     /**
-     * Попытка создать задачу с null описанием или null Telegram ID.
+     * Попытка создать задачу с null описанием или null User ID.
      * <br>
      * Ожидаемое поведение: выбрасывается NullPointerException.
      */
     @Test
-    public void createTaskWithNullDescriptionOrTelegramId() {
+    public void createTaskWithNullDescriptionOrUserId() {
         User user = new User(1L);
 
         IllegalArgumentException ex0 = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.createTask("", user.getTelegramId())
+                taskService.createTask("", user.getUserId())
         );
         Assertions.assertEquals("Описание задачи не может быть пустым", ex0.getMessage());
 
         NullPointerException ex = Assertions.assertThrows(NullPointerException.class, () ->
-                taskService.createTask(null, user.getTelegramId())
+                taskService.createTask(null, user.getUserId())
         );
         Assertions.assertEquals("taskDescription не должен быть null", ex.getMessage());
 
         NullPointerException ex2 = Assertions.assertThrows(NullPointerException.class, () ->
                 taskService.createTask("Какая-то задача", null)
         );
-        Assertions.assertEquals("telegramId не должен быть null", ex2.getMessage());
+        Assertions.assertEquals("userId не должен быть null", ex2.getMessage());
     }
 
     /**
-     * Попытка удалить задачу по её ID и Telegram ID пользователя.
+     * Попытка удалить задачу по её ID и User ID пользователя.
      * <br>
      * Ожидаемое поведение: задача удаляется успешно и возвращается удаленная задача.
      */
     @Test
-    public void deleteTaskByIdAndTelegramId() {
-        User user = new User(1L);
+    public void deleteTaskByIdAndUserId() {
+        User user = new User(3L);
 
-        Task task = taskService.createTask("Задача для удаления", user.getTelegramId());
-        Task deletedTask = taskService.deleteTaskByIdAndTelegramId(task.getId(), user.getTelegramId());
+        Task task = taskService.createTask("Задача для удаления", user.getUserId());
+        Task deletedTask = taskService.deleteTaskByIdAndUserId(task.getId(), user.getUserId());
 
         Assertions.assertEquals(task.getId(), deletedTask.getId());
-        List<Task> tasks = taskService.findAllTasksByTelegramId(user.getTelegramId());
+        List<Task> tasks = taskService.findAllTasksByUserId(user.getUserId());
         Assertions.assertTrue(tasks.isEmpty());
     }
 
@@ -134,7 +135,7 @@ public class TaskServiceIntegrationTest {
         User user = new User(1L);
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.deleteTaskByIdAndTelegramId(999L, user.getTelegramId()));
+                taskService.deleteTaskByIdAndUserId(999L, user.getUserId()));
         Assertions.assertEquals("Задача не найдена", ex.getMessage());
     }
 
@@ -144,22 +145,18 @@ public class TaskServiceIntegrationTest {
      * Ожидаемое поведение: задача удаляется успешно и возвращается удаленная задача.
      */
     @Test
-    public void deleteTaskByIndexAndTelegramId() {
+    public void deleteTaskByIndexAndUserId() {
         User user = new User(1001L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        Task task2 = taskService.createTask("Задача 2", user.getTelegramId());
-        taskService.createTask("Задача 3", user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
 
-        Task deletedTask = taskService.deleteTaskByIndexAndTelegramId(2, user.getTelegramId());
+        Task deletedTask = taskService.deleteTaskByIndexAndUserId(1, user.getUserId());
+        Assertions.assertEquals("Задача 1", deletedTask.getDescription());
 
-        Assertions.assertEquals(task2.getId(), deletedTask.getId());
-        List<Task> tasks = taskService.findAllTasksByTelegramId(user.getTelegramId());
-        Assertions.assertEquals(2, tasks.size());
-        Assertions.assertTrue(tasks.stream()
-                .map(Task::getDescription)
-                .toList()
-                .containsAll(List.of("Задача 1", "Задача 3")));
+        List<Task> tasks = taskService.findAllTasksByUserId(user.getUserId());
+        Assertions.assertEquals(1, tasks.size());
+        Assertions.assertEquals("Задача 2", tasks.getFirst().getDescription());
     }
 
     /**
@@ -171,18 +168,18 @@ public class TaskServiceIntegrationTest {
     public void deleteTaskByInvalidIndexThrowsException() {
         User user = new User(1002L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.deleteTaskByIndexAndTelegramId(5, user.getTelegramId()));
+                taskService.deleteTaskByIndexAndUserId(5, user.getUserId()));
         Assertions.assertEquals("Ошибка: Задача с номером 5 не найдена", ex.getMessage());
 
         IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.deleteTaskByIndexAndTelegramId(0, user.getTelegramId()));
+                taskService.deleteTaskByIndexAndUserId(0, user.getUserId()));
         Assertions.assertEquals("Номер задачи должен быть положительным", ex2.getMessage());
 
         IllegalArgumentException ex3 = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.deleteTaskByIndexAndTelegramId(-1, user.getTelegramId()));
+                taskService.deleteTaskByIndexAndUserId(-1, user.getUserId()));
         Assertions.assertEquals("Номер задачи должен быть положительным", ex3.getMessage());
     }
 
@@ -195,13 +192,13 @@ public class TaskServiceIntegrationTest {
     public void formatTaskList() {
         User user = new User(2001L);
 
-        String result = taskService.formatUncompletedTaskAsString(user.getTelegramId());
+        String result = taskService.formatUncompletedTaskAsString(user.getUserId());
         Assertions.assertEquals("Список задач пуст", result);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        taskService.createTask("Задача 2", user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
 
-        result = taskService.formatUncompletedTaskAsString(user.getTelegramId());
+        result = taskService.formatUncompletedTaskAsString(user.getUserId());
         Assertions.assertEquals("1) Задача 1\n2) Задача 2", result);
     }
 
@@ -215,22 +212,22 @@ public class TaskServiceIntegrationTest {
     public void markTaskAsCompleted() {
         User user = new User(3001L);
 
-        taskService.createTask("Какая-то задача", user.getTelegramId());
-        Task task1 = taskService.createTask("Задача для выполнения", user.getTelegramId());
-        taskService.createTask("Другая задача", user.getTelegramId());
-        Task marked = taskService.markTaskCompletedByIndexAndTelegramId(2, user.getTelegramId());
+        taskService.createTask("Какая-то задача", user.getUserId());
+        Task task1 = taskService.createTask("Задача для выполнения", user.getUserId());
+        taskService.createTask("Другая задача", user.getUserId());
+        Task marked = taskService.markTaskCompletedByIndexAndUserId(2, user.getUserId());
 
         Assertions.assertEquals(task1.getId(), marked.getId());
         Assertions.assertTrue(marked.isDone());
 
-        List<Task> uncompleted = taskService.getUncompletedTasks(user.getTelegramId());
+        List<Task> uncompleted = taskService.getUncompletedTasks(user.getUserId());
         Assertions.assertEquals(2, uncompleted.size());
         Assertions.assertTrue(uncompleted.stream()
                 .map(Task::getDescription)
                 .toList()
                 .containsAll(List.of("Какая-то задача", "Другая задача")));
 
-        List<Task> completed = taskService.getCompletedTasks(user.getTelegramId());
+        List<Task> completed = taskService.getCompletedTasks(user.getUserId());
         Assertions.assertEquals(1, completed.size());
         Assertions.assertEquals("Задача для выполнения", completed.getFirst().getDescription());
     }
@@ -244,11 +241,11 @@ public class TaskServiceIntegrationTest {
     public void getCompletedTasks() {
         User user = new User(4001L);
 
-        taskService.createTask("Невыполненная задача", user.getTelegramId());
-        taskService.createTask("Выполненная задача", user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(2, user.getTelegramId());
+        taskService.createTask("Невыполненная задача", user.getUserId());
+        taskService.createTask("Выполненная задача", user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(2, user.getUserId());
 
-        List<Task> completed = taskService.getCompletedTasks(user.getTelegramId());
+        List<Task> completed = taskService.getCompletedTasks(user.getUserId());
         Assertions.assertEquals(1, completed.size());
         Assertions.assertEquals("Выполненная задача", completed.getFirst().getDescription());
         Assertions.assertTrue(completed.getFirst().isDone());
@@ -263,15 +260,15 @@ public class TaskServiceIntegrationTest {
     public void formatCompletedTaskList() {
         User user = new User(5001L);
 
-        String result = taskService.formatCompletedTaskAsString(user.getTelegramId());
+        String result = taskService.formatCompletedTaskAsString(user.getUserId());
         Assertions.assertEquals("Список задач пуст", result);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        taskService.createTask("Задача 2", user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
 
-        result = taskService.formatCompletedTaskAsString(user.getTelegramId());
+        result = taskService.formatCompletedTaskAsString(user.getUserId());
         Assertions.assertEquals("1) Задача 1 ✓\n2) Задача 2 ✓", result);
     }
 
@@ -284,14 +281,14 @@ public class TaskServiceIntegrationTest {
     public void markTaskCompletedByInvalidIndexThrowsException() {
         User user = new User(5002L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.markTaskCompletedByIndexAndTelegramId(5, user.getTelegramId()));
+                taskService.markTaskCompletedByIndexAndUserId(5, user.getUserId()));
         Assertions.assertEquals("Задача с номером 5 не найдена", ex.getMessage());
 
         IllegalArgumentException ex2 = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.markTaskCompletedByIndexAndTelegramId(0, user.getTelegramId()));
+                taskService.markTaskCompletedByIndexAndUserId(0, user.getUserId()));
         Assertions.assertEquals("Номер задачи должен быть положительным", ex2.getMessage());
     }
 
@@ -303,14 +300,14 @@ public class TaskServiceIntegrationTest {
     public void formatTaskListForDeletion_MixedTasks() {
         User user = new User(6001L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        taskService.createTask("Задача 2", user.getTelegramId());
-        taskService.createTask("Задача 3", user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
+        taskService.createTask("Задача 3", user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
 
-        String result = taskService.formatTaskListForDeletion(user.getTelegramId());
-        String expected = "Выполненные задачи\n1) Задача 1 ✓\n2) Задача 2 ✓\n\nНе выполненные задачи\n3) Задача 3";
+        String result = taskService.formatTaskListForDeletion(user.getUserId());
+        String expected = "Выполненные задачи\n1) Задача 1 ✓\n2) Задача 2 ✓\n\nНевыполненные задачи\n3) Задача 3";
         Assertions.assertEquals(expected, result);
     }
 
@@ -322,12 +319,12 @@ public class TaskServiceIntegrationTest {
     public void formatTaskListForDeletion_OnlyCompleted() {
         User user = new User(6002L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        taskService.createTask("Задача 2", user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
 
-        String result = taskService.formatTaskListForDeletion(user.getTelegramId());
+        String result = taskService.formatTaskListForDeletion(user.getUserId());
         String expected = "Выполненные задачи\n1) Задача 1 ✓\n2) Задача 2 ✓";
         Assertions.assertEquals(expected, result);
     }
@@ -340,11 +337,11 @@ public class TaskServiceIntegrationTest {
     public void formatTaskListForDeletion_OnlyUncompleted() {
         User user = new User(6003L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        taskService.createTask("Задача 2", user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
 
-        String result = taskService.formatTaskListForDeletion(user.getTelegramId());
-        String expected = "Не выполненные задачи\n1) Задача 1\n2) Задача 2";
+        String result = taskService.formatTaskListForDeletion(user.getUserId());
+        String expected = "Невыполненные задачи\n1) Задача 1\n2) Задача 2";
         Assertions.assertEquals(expected, result);
     }
 
@@ -356,7 +353,7 @@ public class TaskServiceIntegrationTest {
     public void formatTaskListForDeletion_EmptyList() {
         User user = new User(6004L);
 
-        String result = taskService.formatTaskListForDeletion(user.getTelegramId());
+        String result = taskService.formatTaskListForDeletion(user.getUserId());
         Assertions.assertEquals("Список задач пуст", result);
     }
 
@@ -368,16 +365,16 @@ public class TaskServiceIntegrationTest {
     public void deleteTaskByIndexFromCombinedList_DeleteCompleted() {
         User user = new User(6005L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        taskService.createTask("Задача 2", user.getTelegramId());
-        taskService.createTask("Задача 3", user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
+        taskService.createTask("Задача 3", user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
 
-        Task deleted = taskService.deleteTaskByIndexFromCombinedList(1, user.getTelegramId());
+        Task deleted = taskService.deleteTaskByIndexFromCombinedList(1, user.getUserId());
         Assertions.assertEquals("Задача 1", deleted.getDescription());
 
-        String list = taskService.formatTaskListForDeletion(user.getTelegramId());
-        String expected = "Не выполненные задачи\n1) Задача 2\n2) Задача 3";
+        String list = taskService.formatTaskListForDeletion(user.getUserId());
+        String expected = "Невыполненные задачи\n1) Задача 2\n2) Задача 3";
         Assertions.assertEquals(expected, list);
     }
 
@@ -389,16 +386,16 @@ public class TaskServiceIntegrationTest {
     public void deleteTaskByIndexFromCombinedList_DeleteUncompleted() {
         User user = new User(6006L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
-        taskService.createTask("Задача 2", user.getTelegramId());
-        taskService.createTask("Задача 3", user.getTelegramId());
-        taskService.markTaskCompletedByIndexAndTelegramId(1, user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
+        taskService.createTask("Задача 2", user.getUserId());
+        taskService.createTask("Задача 3", user.getUserId());
+        taskService.markTaskCompletedByIndexAndUserId(1, user.getUserId());
 
-        Task deleted = taskService.deleteTaskByIndexFromCombinedList(2, user.getTelegramId());
+        Task deleted = taskService.deleteTaskByIndexFromCombinedList(2, user.getUserId());
         Assertions.assertEquals("Задача 2", deleted.getDescription());
 
-        String list = taskService.formatTaskListForDeletion(user.getTelegramId());
-        String expected = "Выполненные задачи\n1) Задача 1 ✓\n\nНе выполненные задачи\n2) Задача 3";
+        String list = taskService.formatTaskListForDeletion(user.getUserId());
+        String expected = "Выполненные задачи\n1) Задача 1 ✓\n\nНевыполненные задачи\n2) Задача 3";
         Assertions.assertEquals(expected, list);
     }
 
@@ -410,10 +407,10 @@ public class TaskServiceIntegrationTest {
     public void deleteTaskByIndexFromCombinedList_InvalidIndex() {
         User user = new User(6007L);
 
-        taskService.createTask("Задача 1", user.getTelegramId());
+        taskService.createTask("Задача 1", user.getUserId());
 
         IllegalArgumentException ex = Assertions.assertThrows(IllegalArgumentException.class, () ->
-                taskService.deleteTaskByIndexFromCombinedList(5, user.getTelegramId()));
+                taskService.deleteTaskByIndexFromCombinedList(5, user.getUserId()));
         Assertions.assertEquals("Задача с номером 5 не найдена", ex.getMessage());
     }
 }

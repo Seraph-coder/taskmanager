@@ -9,8 +9,6 @@ import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.service.TaskService;
 
-import java.util.Optional;
-
 /**
  * Обработчик состояния AWAITING_TASK_ID_FOR_COMPLETION.
  *
@@ -18,28 +16,31 @@ import java.util.Optional;
  * @since 25.12.2025
  */
 @Component
-public class AwaitingTaskIdForCompletionHandler implements MessageHandler {
+public class AwaitingTaskIdForCompletionHandler implements StateHandler {
     private final TaskService taskService;
     private final Logger log = LoggerFactory.getLogger(AwaitingTaskIdForCompletionHandler.class);
 
+    /**
+     * Конструктор обработчика состояния ожидания идентификатора задачи для отметки как выполненной.
+     */
     public AwaitingTaskIdForCompletionHandler(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @Override
-    public Optional<UserState> getHandledState() {
-        return Optional.of(UserState.AWAITING_TASK_ID_FOR_COMPLETION);
+    public UserState getHandledState() {
+        return UserState.AWAITING_TASK_ID_FOR_COMPLETION;
     }
 
     @Override
     public StateTransition handle(Long chatId, String text) {
-        if ("/cancel".equalsIgnoreCase(text)) {
+        if (BotConstants.CANCEL_COMMAND.equalsIgnoreCase(text)) {
             return new StateTransition(BotConstants.MSG_ACTION_CANCELLED,
                     UserState.DEFAULT, KeyboardType.MAIN_MENU);
         }
         try {
             int taskIndex = Integer.parseInt(text.trim());
-            Task completed = taskService.markTaskCompletedByIndexAndTelegramId(taskIndex, chatId);
+            Task completed = taskService.markTaskCompletedByIndexAndUserId(taskIndex, chatId);
             return new StateTransition(
                     "Задача '" + completed.getDescription() + "' отмечена как выполненная",
                     UserState.DEFAULT, KeyboardType.MAIN_MENU);

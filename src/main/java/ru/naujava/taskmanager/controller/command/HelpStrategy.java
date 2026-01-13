@@ -6,22 +6,20 @@ import ru.naujava.taskmanager.controller.CommandResponse;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 
 /**
- * Команда для отмены текущего действия.
+ * Команда помощи.
  *
  * @author Seraph-coder
- * @since 23.12.2025
+ * @since 02.11.2025
  */
 @Component
-public class CancelCommand implements BotCommand {
-
+public class HelpStrategy implements TextStrategy {
     @Override
     public String getCommandName() {
-        return "/cancel";
+        return "/help";
     }
 
     @Override
-    public CommandResponse execute(String message, Long chatId) {
-        return new CommandResponse(BotConstants.MSG_ACTION_CANCELLED,
-                null, KeyboardType.MAIN_MENU);
+    public CommandResponse execute(String command, Long chatId) {
+        return new CommandResponse(BotConstants.MSG_HELP, null, KeyboardType.MAIN_MENU);
     }
 }

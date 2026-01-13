@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.bot.CallbackHandler;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.service.TaskService;
@@ -37,7 +38,7 @@ class CallbackHandlerIntegrationTest {
      */
     @Test
     void handleAddCallback() {
-        StateTransition transition = callbackHandler.handle(CHAT_ID, BotConstants.CALLBACK_ADD);
+        StateTransition transition = callbackHandler.processCallback(BotConstants.CALLBACK_ADD, CHAT_ID);
 
         Assertions.assertNotNull(transition);
         Assertions.assertEquals(UserState.AWAITING_TASK_DESCRIPTION, transition.newState());
@@ -51,7 +52,7 @@ class CallbackHandlerIntegrationTest {
     void handleDeleteCallback() {
         taskService.createTask("Тестовая задача", CHAT_ID);
 
-        StateTransition transition = callbackHandler.handle(CHAT_ID, BotConstants.CALLBACK_DELETE);
+        StateTransition transition = callbackHandler.processCallback(BotConstants.CALLBACK_DELETE, CHAT_ID);
 
         Assertions.assertNotNull(transition);
         Assertions.assertEquals(UserState.AWAITING_TASK_ID_FOR_DELETION, transition.newState());
@@ -63,7 +64,7 @@ class CallbackHandlerIntegrationTest {
      */
     @Test
     void handleDeleteCallback_NoTasks() {
-        StateTransition transition = callbackHandler.handle(CHAT_ID, BotConstants.CALLBACK_DELETE);
+        StateTransition transition = callbackHandler.processCallback(BotConstants.CALLBACK_DELETE, CHAT_ID);
 
         Assertions.assertNotNull(transition);
         Assertions.assertEquals(UserState.DEFAULT, transition.newState());
@@ -75,7 +76,7 @@ class CallbackHandlerIntegrationTest {
      */
     @Test
     void handleCancelCallback() {
-        StateTransition transition = callbackHandler.handle(CHAT_ID, BotConstants.CALLBACK_CANCEL);
+        StateTransition transition = callbackHandler.processCallback(BotConstants.CALLBACK_CANCEL, CHAT_ID);
 
         Assertions.assertNotNull(transition);
         Assertions.assertEquals(UserState.DEFAULT, transition.newState());
@@ -89,7 +90,7 @@ class CallbackHandlerIntegrationTest {
     void handleListCallback() {
         taskService.createTask("Задача 1", CHAT_ID);
 
-        StateTransition transition = callbackHandler.handle(CHAT_ID, BotConstants.CALLBACK_LIST);
+        StateTransition transition = callbackHandler.processCallback(BotConstants.CALLBACK_LIST, CHAT_ID);
 
         Assertions.assertNotNull(transition);
         Assertions.assertNull(transition.newState());
@@ -101,7 +102,7 @@ class CallbackHandlerIntegrationTest {
      */
     @Test
     void handleUnknownCallback() {
-        StateTransition transition = callbackHandler.handle(CHAT_ID, "UNKNOWN_CALLBACK");
+        StateTransition transition = callbackHandler.processCallback("UNKNOWN_CALLBACK", CHAT_ID);
 
         Assertions.assertNotNull(transition);
         Assertions.assertNull(transition.newState());

@@ -13,13 +13,13 @@ import ru.naujava.taskmanager.service.TaskService;
  * @since 18.12.2025
  */
 @Component
-public class ShowDoneCommand implements BotCommand {
+public class ShowDoneStrategy implements TextStrategy {
     private final TaskService taskService;
 
     /**
      * Конструктор команды показа выполненных задач.
      */
-    public ShowDoneCommand(TaskService taskService) {
+    public ShowDoneStrategy(TaskService taskService) {
         this.taskService = taskService;
     }
 

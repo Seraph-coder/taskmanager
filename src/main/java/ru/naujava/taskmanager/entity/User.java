@@ -22,10 +22,10 @@ public class User {
     private Long id;
 
     /**
-     * Уникальный Telegram ID пользователя.
+     * Уникальный User ID пользователя.
      */
-    @Column(name = "telegram_id", nullable = false, unique = true)
-    private Long telegramId;
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId;
 
     /**
      * Список задач, связанных с пользователем.
@@ -37,8 +37,8 @@ public class User {
     public User() {
     }
 
-    public User(Long telegramId) {
-        this.telegramId = telegramId;
+    public User(Long userId) {
+        this.userId = userId;
     }
 
     public Long getId() {
@@ -49,12 +49,12 @@ public class User {
         this.id = id;
     }
 
-    public Long getTelegramId() {
-        return telegramId;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setTelegramId(Long telegramId) {
-        this.telegramId = telegramId;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public List<Task> getTasks() {

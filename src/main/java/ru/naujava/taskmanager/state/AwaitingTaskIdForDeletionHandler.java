@@ -9,8 +9,6 @@ import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.keyboard.model.KeyboardType;
 import ru.naujava.taskmanager.service.TaskService;
 
-import java.util.Optional;
-
 
 /**
  * Обработчик состояния ожидания номера задачи для удаления.
@@ -19,25 +17,25 @@ import java.util.Optional;
  * @since 16.12.2025
  */
 @Component
-public class AwaitingTaskIdForDeletionHandler implements MessageHandler {
+public class AwaitingTaskIdForDeletionHandler implements StateHandler {
     private final TaskService taskService;
     private final Logger log = LoggerFactory.getLogger(AwaitingTaskIdForDeletionHandler.class);
 
     /**
-     * Конструктор.
+     * Конструктор обработчика состояния ожидания номера задачи для удаления.
      */
     public AwaitingTaskIdForDeletionHandler(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @Override
-    public Optional<UserState> getHandledState() {
-        return Optional.of(UserState.AWAITING_TASK_ID_FOR_DELETION);
+    public UserState getHandledState() {
+        return UserState.AWAITING_TASK_ID_FOR_DELETION;
     }
 
     @Override
     public StateTransition handle(Long chatId, String text) {
-        if ("/cancel".equalsIgnoreCase(text)) {
+        if (BotConstants.CANCEL_COMMAND.equalsIgnoreCase(text)) {
             return new StateTransition(BotConstants.MSG_ACTION_CANCELLED,
                     UserState.DEFAULT, KeyboardType.MAIN_MENU);
         }
@@ -52,7 +50,7 @@ public class AwaitingTaskIdForDeletionHandler implements MessageHandler {
             return new StateTransition("Неверный номер задачи. Попробуйте еще раз.",
                     UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL);
         } catch (IllegalArgumentException e) {
-            log.warn("Ошибка при удалении задачи для chatId={}: {}", chatId, e.getMessage(), e);
+            log.error("Ошибка при удалении задачи для chatId={}: {}", chatId, e.getMessage(), e);
             return new StateTransition(e.getMessage() + ". Попробуйте еще раз.",
                     UserState.AWAITING_TASK_ID_FOR_DELETION, KeyboardType.CANCEL);
         }

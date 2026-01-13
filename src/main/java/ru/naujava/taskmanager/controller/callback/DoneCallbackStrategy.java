@@ -17,6 +17,9 @@ import ru.naujava.taskmanager.state.StateTransition;
 public class DoneCallbackStrategy implements CallbackStrategy {
     private final TaskService taskService;
 
+    /**
+     * Конструктор стратегии отметки задачи как выполненной.
+     */
     public DoneCallbackStrategy(TaskService taskService) {
         this.taskService = taskService;
     }
@@ -43,4 +46,3 @@ public class DoneCallbackStrategy implements CallbackStrategy {
         return BotConstants.CALLBACK_DONE;
     }
 }
-

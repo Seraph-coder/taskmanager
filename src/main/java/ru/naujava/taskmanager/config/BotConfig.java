@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.naujava.taskmanager.bot.BotMessageProcessor;
+import ru.naujava.taskmanager.bot.KeyboardFactory;
 import ru.naujava.taskmanager.bot.MessageRateLimiter;
 import ru.naujava.taskmanager.bot.TelegramBot;
-import ru.naujava.taskmanager.bot.keyboard.KeyboardFactory;
 import ru.naujava.taskmanager.keyboard.KeyboardProvider;
 import ru.naujava.taskmanager.state.StateMachine;
 
