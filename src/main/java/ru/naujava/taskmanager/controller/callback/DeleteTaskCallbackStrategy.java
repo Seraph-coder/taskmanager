@@ -17,6 +17,9 @@ import ru.naujava.taskmanager.state.StateTransition;
 public class DeleteTaskCallbackStrategy implements CallbackStrategy {
     private final TaskService taskService;
 
+    /**
+     * Конструктор стратегии удаления задачи.
+     */
     public DeleteTaskCallbackStrategy(TaskService taskService) {
         this.taskService = taskService;
     }

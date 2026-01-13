@@ -16,6 +16,9 @@ import ru.naujava.taskmanager.state.StateTransition;
 public class ListTasksCallbackStrategy implements CallbackStrategy {
     private final TaskService taskService;
 
+    /**
+     * Конструктор стратегии списка задач.
+     */
     public ListTasksCallbackStrategy(TaskService taskService) {
         this.taskService = taskService;
     }
