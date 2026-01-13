@@ -3,7 +3,6 @@ package ru.naujava.taskmanager.state;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.entity.UserIdState;
 import ru.naujava.taskmanager.entity.UserState;
 import ru.naujava.taskmanager.repository.UserIdStateRepository;
@@ -68,7 +67,6 @@ public class UserIdStateService {
      * @param newState новое состояние пользователя
      * @throws NullPointerException если userId или newState равны null
      */
-    @Transactional
     void changeUserState(Long userId, UserState newState) {
         Objects.requireNonNull(userId, "userId не может быть null");
         Objects.requireNonNull(newState, "newState не может быть null");

@@ -3,6 +3,7 @@ package ru.naujava.taskmanager.state;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.controller.callback.CallbackProcessor;
 import ru.naujava.taskmanager.entity.UserState;
 
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  * @since 25.11.2025
  */
 @Component
+@Transactional
 public class StateMachine {
     private final UserIdStateService userIdStateService;
     private final Map<UserState, StateHandler> handlers;

@@ -3,7 +3,6 @@ package ru.naujava.taskmanager.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.entity.User;
 import ru.naujava.taskmanager.repository.UserRepository;
 
@@ -40,7 +39,6 @@ public class UserService {
      *
      * @throws IllegalArgumentException если userId null или не положительное число
      */
-    @Transactional
     public User getOrCreateByUserId(Long userId) {
         if (userId == null) {
             throw new IllegalArgumentException("User ID не может быть null");
