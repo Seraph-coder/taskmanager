@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 import ru.naujava.taskmanager.bot.BotConstants;
 import ru.naujava.taskmanager.bot.CallbackHandler;
 import ru.naujava.taskmanager.entity.UserState;
@@ -21,6 +22,7 @@ import ru.naujava.taskmanager.state.StateTransition;
  * @since 23.12.2025
  */
 @SpringBootTest
+@Transactional
 class CallbackHandlerIntegrationTest {
 
     @Autowired
