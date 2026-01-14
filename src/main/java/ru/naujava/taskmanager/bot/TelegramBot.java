@@ -1,13 +1,17 @@
 package ru.naujava.taskmanager.bot;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import ru.naujava.taskmanager.controller.CommandHandler;
 
 import java.util.List;
 
@@ -21,15 +25,22 @@ import java.util.List;
 public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsumer {
     private final String botToken;
     private final TelegramClient telegramClient;
-    private final CommandHandler commandHandler;
+    private final BotMessageProcessor messageProcessor;
+    private final KeyboardFactory keyboardFactory;
+    private final Logger log = LoggerFactory.getLogger(TelegramBot.class);
 
-    public TelegramBot(String botToken, CommandHandler commandHandler) {
+    /**
+     * Конструктор телеграм-бота.
+     */
+    public TelegramBot(BotMessageProcessor messageProcessor, String botToken,
+                       KeyboardFactory keyboardFactory) {
         this.botToken = botToken;
-        this.commandHandler = commandHandler;
-        if (botToken != null && !botToken.isBlank()) {
-            this.telegramClient = new OkHttpTelegramClient(botToken);
-        } else {
+        this.messageProcessor = messageProcessor;
+        this.keyboardFactory = keyboardFactory;
+        if (botToken == null || botToken.isBlank()) {
             this.telegramClient = null;
+        } else {
+            this.telegramClient = new OkHttpTelegramClient(botToken);
         }
     }
 
@@ -37,46 +48,75 @@ public class TelegramBot implements SpringLongPollingBot, LongPollingUpdateConsu
      * Обрабатывает входящие обновления от Telegram.
      */
     @Override
-    public void consume(List<Update> list) {
-        for (Update update : list) {
-            if (update.hasMessage() && update.getMessage().hasText()) {
-                Long chatId = update.getMessage().getChatId();
-                String messageFromUser = update.getMessage().getText();
-                String reply = commandHandler.handle(messageFromUser, chatId);
-                if (reply != null && !reply.isEmpty()) {
-                    sendMessage(chatId, reply);
+    public void consume(List<Update> updates) {
+        for (Update update : updates) {
+            try {
+                List<BotResponse> responses;
+                if (update.hasCallbackQuery()) {
+                    CallbackQuery callback = update.getCallbackQuery();
+                    responses = messageProcessor.processCallback(
+                            callback.getMessage().getChatId(), callback.getData());
+                    answerCallback(callback.getId());
+                } else if (update.hasMessage() && update.getMessage().hasText()) {
+                    Message message = update.getMessage();
+                    responses = messageProcessor.processTextMessage(message.getChatId(), message.getText());
+                } else {
+                    continue;
                 }
+
+                for (BotResponse response : responses) {
+                    sendMessage(response);
+                }
+            } catch (Exception e) {
+                log.warn("Ошибка при обработке обновления: {}", e.getMessage(), e);
             }
         }
     }
 
     /**
-     * Отправляет сообщение в указанный чат.
+     * Отправляет сообщение.
      */
-    public void sendMessage(Long chatId, String reply) {
-        SendMessage sendMessage = SendMessage
-                .builder()
-                .chatId(chatId)
-                .text(reply)
-                .build();
+    @SuppressWarnings("rawtypes")
+    private void sendMessage(BotResponse response) {
+        SendMessage.SendMessageBuilder builder = SendMessage.builder()
+                .chatId(response.chatId())
+                .text(response.text());
+        if (response.keyboard() != null) {
+            builder.replyMarkup(keyboardFactory.build(response.keyboard()));
+        }
+        executeSafe(builder.build());
+    }
+
+    /**
+     * Безопасно выполняет отправку сообщения, обрабатывая исключения.
+     */
+    private void executeSafe(SendMessage msg) {
         try {
-            telegramClient.execute(sendMessage);
+            telegramClient.execute(msg);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.warn("Не удалось отправить сообщение: {}", e.getMessage(), e);
         }
     }
 
     /**
-     * Получает токен бота.
+     * Отвечает на CallbackQuery.
      */
+    private void answerCallback(String callbackId) {
+        try {
+            AnswerCallbackQuery answer = AnswerCallbackQuery.builder()
+                    .callbackQueryId(callbackId)
+                    .build();
+            telegramClient.execute(answer);
+        } catch (TelegramApiException e) {
+            log.warn("Не удалось ответить на callback query: {}", e.getMessage(), e);
+        }
+    }
+
     @Override
     public String getBotToken() {
         return botToken;
     }
 
-    /**
-     * Получает клиент Telegram.
-     */
     @Override
     public LongPollingUpdateConsumer getUpdatesConsumer() {
         return this;

@@ -14,18 +14,31 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User {
+    /**
+     * Уникальный идентификатор пользователя.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "telegram_id", nullable = false, unique = true)
-    private Long telegramId;
+    /**
+     * Уникальный User ID пользователя.
+     */
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId;
 
+    /**
+     * Список задач, связанных с пользователем.
+     */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true,
             fetch = FetchType.LAZY)
     private List<Task> tasks = new ArrayList<>();
 
     public User() {
+    }
+
+    public User(Long userId) {
+        this.userId = userId;
     }
 
     public Long getId() {
@@ -36,12 +49,12 @@ public class User {
         this.id = id;
     }
 
-    public Long getTelegramId() {
-        return telegramId;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setTelegramId(Long telegramId) {
-        this.telegramId = telegramId;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public List<Task> getTasks() {

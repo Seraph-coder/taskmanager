@@ -1,0 +1,40 @@
+package ru.naujava.taskmanager.controller.command;
+
+import org.springframework.stereotype.Component;
+import ru.naujava.taskmanager.bot.BotConstants;
+import ru.naujava.taskmanager.controller.CommandResponse;
+import ru.naujava.taskmanager.keyboard.model.KeyboardType;
+import ru.naujava.taskmanager.service.TaskService;
+
+/**
+ * Команда для отображения списка задач пользователя.
+ *
+ * @author Seraph-coder
+ * @since 02.11.2025
+ */
+@Component
+public class TodoListStrategy implements TextStrategy {
+    private final TaskService taskService;
+
+    /**
+     * Конструктор отображения списка задач.
+     */
+    public TodoListStrategy(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @Override
+    public String getCommandName() {
+        return "/todo";
+    }
+
+    @Override
+    public CommandResponse execute(String command, Long chatId) {
+        if (chatId == null) {
+            return new CommandResponse(
+                    BotConstants.MSG_UNKNOWN_USER, null, KeyboardType.NONE);
+        }
+        String taskList = taskService.formatTaskList(chatId);
+        return new CommandResponse(taskList, null, KeyboardType.MAIN_MENU);
+    }
+}

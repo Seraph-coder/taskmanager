@@ -11,18 +11,38 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "tasks")
 public class Task {
+    /**
+     * Идентификатор задачи.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Описание задачи.
+     */
     @Column(nullable = false)
     private String description;
 
+    /**
+     * Статус выполнения задачи.
+     */
+    @Column(nullable = false)
+    private boolean done = false;
+
+    /**
+     * Пользователь, которому принадлежит задача.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public Task() {
+    }
+
+    public Task(String description, User user) {
+        this.description = description;
+        this.user = user;
     }
 
     public Long getId() {
@@ -39,6 +59,14 @@ public class Task {
 
     public void setDescription(String title) {
         this.description = title;
+    }
+
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
     }
 
     public User getUser() {

@@ -14,17 +14,27 @@ import java.util.Optional;
  */
 public interface TaskRepository extends JpaRepository<Task, Long> {
     /**
-     * Находит все задачи, принадлежащие пользователю с указанным Telegram ID.
+     * Находит все задачи пользователя и сортирует их по id по возрастанию.
      */
-    List<Task> findByUser_TelegramId(Long telegramId);
+    List<Task> findByUser_UserIdOrderByIdAsc(Long userId);
 
     /**
-     * Находит задачу по её ID и Telegram ID пользователя.
+     * Находит задачу по её ID и User ID пользователя.
      */
-    Optional<Task> findByIdAndUser_TelegramId(Long id, Long telegramId);
+    Optional<Task> findByIdAndUser_UserId(Long id, Long userId);
 
     /**
      * Проверяет, существует ли задача с таким описанием у указанного пользователя.
      */
-    boolean existsByUser_TelegramIdAndDescription(Long telegramId, String description);
+    boolean existsByUser_UserIdAndDescription(Long userId, String description);
+
+    /**
+     * Находит все невыполненные задачи пользователя и сортирует их по id по возрастанию.
+     */
+    List<Task> findByUser_UserIdAndDoneFalseOrderByIdAsc(Long userId);
+
+    /**
+     * Находит все выполненные задачи пользователя и сортирует их по id по возрастанию.
+     */
+    List<Task> findByUser_UserIdAndDoneTrueOrderByIdAsc(Long userId);
 }

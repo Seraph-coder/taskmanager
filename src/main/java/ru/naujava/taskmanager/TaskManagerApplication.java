@@ -14,8 +14,8 @@ public class TaskManagerApplication {
     /**
      * Точка входа в приложение.
      */
-	public static void main(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(TaskManagerApplication.class, args);
-	}
+    }
 
 }
